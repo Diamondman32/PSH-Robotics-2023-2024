@@ -1,0 +1,153 @@
+package org.firstinspires.ftc.teamcode.drive;
+
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
+
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+
+@TeleOp(group="drive")
+public class TeleOpCenterStage extends OpMode {
+    private DcMotor frontLeft, frontRight, backLeft, backRight, liftMotor1, liftMotor2;
+
+    public void liftToHeightEncoders(int level, double power){
+        liftMotor1.setPower(0);
+        liftMotor2.setPower(0);
+        int liftValue = 0;
+        if (level == 2) {
+            liftValue = -1200;
+        } else if (level == 3) {
+            liftValue = -3800;
+        } else if (level == 4) {
+            liftValue = -4000;
+        }
+
+        liftMotor1.setTargetPosition(-liftValue);
+        liftMotor2.setTargetPosition(liftValue);
+        liftMotor1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        liftMotor2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        liftMotor1.setPower(power);
+        liftMotor2.setPower(power);
+
+        while (liftMotor1.isBusy()||liftMotor2.isBusy()){
+            telemetry.addData("Left Lift Encoder Position", liftMotor1.getCurrentPosition());
+            telemetry.addData("Right Lift Encoder Position", liftMotor2.getCurrentPosition());
+            telemetry.update();
+        }
+
+        liftMotor1.setPower(0);
+        liftMotor2.setPower(0);
+        liftMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        liftMotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    public void init() {
+        //frontLeft = hardwareMap.get(DcMotorEx.class, "tl"); //top-left
+        //frontRight = hardwareMap.get(DcMotorEx.class, "tr"); //top-right
+        //backLeft = hardwareMap.get(DcMotorEx.class, "bl"); //back-left
+        //backRight = hardwareMap.get(DcMotorEx.class, "br"); //back-right
+        liftMotor1 = hardwareMap.get(DcMotorEx.class, "lm1"); //lift-motor-1 LEFT
+        liftMotor2 = hardwareMap.get(DcMotorEx.class, "lm2"); //lift-motor-2 RIGHT
+        liftMotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        liftMotor2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        liftMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        liftMotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+    public void loop() {
+        //Drive Train
+        float yPosLeft01 = -gamepad1.left_stick_y;
+        float yPosRight01 = -gamepad1.right_stick_y;
+        float yPosLeft02 = -gamepad2.left_stick_y;
+        float yPosRight02 = -gamepad2.right_stick_y;
+
+        /*if(gamepad1.right_trigger > 0) {
+            frontLeft.setPower(-gamepad1.right_trigger);
+            frontRight.setPower(gamepad1.right_trigger);
+            backLeft.setPower(gamepad1.right_trigger);
+            backRight.setPower(-gamepad1.right_trigger);
+        } else if(gamepad1.left_trigger > 0) {
+            frontLeft.setPower(gamepad1.right_trigger);
+            frontRight.setPower(-gamepad1.right_trigger);
+            backLeft.setPower(-gamepad1.right_trigger);
+            backRight.setPower(gamepad1.right_trigger);
+        }else if(gamepad1.left_bumper) {
+            frontLeft.setPower(gamepad1.left_stick_y*0.5);
+            frontRight.setPower(gamepad1.left_stick_y*0.5);
+            backLeft.setPower(gamepad1.right_stick_y*0.5);
+            backRight.setPower(gamepad1.right_stick_y*0.5);
+        } else if(gamepad1.right_bumper) {
+            frontLeft.setPower(gamepad1.left_stick_y*0.5);
+            frontRight.setPower(gamepad1.left_stick_y*0.5);
+            backLeft.setPower(gamepad1.right_stick_y*0.5);
+            backRight.setPower(gamepad1.right_stick_y*0.5);
+        } else {
+            frontLeft.setPower(-yPosLeft01);
+            frontRight.setPower(-yPosLeft01);
+            backLeft.setPower(-yPosRight01);
+            backRight.setPower(-yPosRight01);
+        }*/
+
+        //frontLeft.setPower(-yPosLeft01);
+        //frontRight.setPower(-yPosLeft01);
+        //backLeft.setPower(-yPosRight01);
+        //backRight.setPower(-yPosRight01);
+
+
+        // LIFT
+
+        //If there is a difference in motor positions, set the power multiplier of the faster motor to
+        // the divided motor positions ALSO LIFT MOTOR 2 SPINS OPPOSITE WAY SO IT NEEDS TO BE NEGATIVE
+        double liftMultiplier1 = 1;
+        double liftMultiplier2 = 1;
+        if(Math.abs(Math.abs(liftMotor1.getCurrentPosition())-Math.abs(liftMotor2.getCurrentPosition())) > 15 &&
+                liftMotor1.getCurrentPosition() != 0 && liftMotor2.getCurrentPosition() != 0) {
+            if (Math.abs(liftMotor1.getCurrentPosition())>Math.abs(liftMotor2.getCurrentPosition())) {
+                if (yPosRight02 > 0.03) { //if going up handicap higher motor
+                    //liftMultiplier2 = (double) Math.abs(liftMotor2.getCurrentPosition()/liftMotor1.getCurrentPosition());
+                    liftMultiplier1 = 0.95;
+                } else if (yPosRight02 < -0.03) { //if going down handicap lower motor
+                    //liftMultiplier1 = (double) Math.abs(liftMotor2.getCurrentPosition()/liftMotor1.getCurrentPosition());
+                    liftMultiplier2 = 0.95;
+                }
+            } else {
+                if (yPosRight02 > 0.03) {
+                    //liftMultiplier2 = (double) Math.abs(liftMotor1.getCurrentPosition()/liftMotor2.getCurrentPosition());
+                    liftMultiplier1 = 0.95;
+                } else if (yPosRight02 < -0.03) {
+                    //liftMultiplier1 = (double) Math.abs(liftMotor1.getCurrentPosition()/liftMotor2.getCurrentPosition());
+                    liftMultiplier2 = 0.95;
+                }
+            }
+        } else {
+            liftMultiplier1 = 1.00;
+            liftMultiplier2 = 1.00;
+        }
+
+        while(gamepad2.right_stick_y != 0)
+        liftMotor1.setPower(yPosRight02 * liftMultiplier1);
+        liftMotor2.setPower(-1 * yPosRight02 * liftMultiplier2);
+
+        telemetry.addData("LiftPos1", liftMotor1.getCurrentPosition());
+        telemetry.addData("LiftPos2", -liftMotor2.getCurrentPosition());
+        telemetry.addData("Mult1", liftMultiplier1);
+        telemetry.addData("Mult2", liftMultiplier2);
+        telemetry.addData("rightStick", yPosRight02);
+        telemetry.addData("leftStick", yPosLeft02);
+        telemetry.update();
+        if (gamepad2.a) {
+            liftMotor1.setPower(-0.5);
+        }
+        if (gamepad2.b) {
+            liftMotor1.setPower(0.5);
+        }
+
+        if(gamepad1.y) {
+            liftToHeightEncoders(1, 0.25);
+        }
+        if(gamepad1.b) {
+            liftToHeightEncoders(2, 0.25);
+        }
+    }
+}
