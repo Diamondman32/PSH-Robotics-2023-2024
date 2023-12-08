@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.drive;
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -11,6 +13,44 @@ public class AutoCenterStage extends LinearOpMode {
         waitForStart();
         if (isStopRequested()) return;
 
-        
+
+        //Pose2d startPose = new Pose2d(-36, 63, Math.toRadians(270));
+        //robot.setPoseEstimate(startPose);
+        Pose2d startPose = new Pose2d(0,0,0);
+        robot.setPoseEstimate(startPose);
+        Trajectory moveToCones = robot.trajectoryBuilder(startPose)
+                .forward(24) // 24in
+                .build();
+        Trajectory checkLeft = robot.trajectoryBuilder(moveToCones.end())
+                .lineToLinearHeading(new Pose2d(24, 0, Math.toRadians(-90)))
+                .build();
+        Trajectory goToRight = robot.trajectoryBuilder(checkLeft.end())
+                .lineToLinearHeading(new Pose2d(24, 0, Math.toRadians(180)))
+                .build();
+        Trajectory park1 = robot.trajectoryBuilder(goToRight.end())
+                .lineToLinearHeading(new Pose2d(50,0, Math.toRadians(0)))
+                .build();
+        Trajectory park2 = robot.trajectoryBuilder(park1.end())
+                .lineToLinearHeading(new Pose2d(50,98, Math.toRadians(0)))
+                .build();
+
+        robot.followTrajectory(moveToCones);
+        robot.followTrajectory(checkLeft);
+        robot.followTrajectory(goToRight);
+        robot.followTrajectory(park1);
+        robot.followTrajectory(park2);
+
+        //Drive to scan
+
+            //scan forward if object cap it
+
+            //scan left ~90 deg if object cap it
+
+            //cap right
+
+            //reset to forward
+
+            //drive to park
+
     }
 }
