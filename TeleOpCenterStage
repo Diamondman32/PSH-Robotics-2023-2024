@@ -19,10 +19,12 @@ import java.util.List;
 public class TeleOpCenterStage extends OpMode {
     private DcMotor frontLeft, frontRight, backLeft, backRight, liftMotor1, liftMotor2;
     private CRServo leftServoArm, rightServoArm;
-    private Servo leftGrabber, rightGrabber;
-    private double servoPos = 0.0; //for Grabber Arm
+    private Servo leftGrabber, rightGrabber, droneLauncher;
+    private double servoPos = 0.86; //for Grabber Arm
     private boolean rightGrabberToggle = true;
     private boolean leftGrabberToggle = true;
+    private double pos = 0.0;
+
 
     public ElapsedTime rightGrabTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     public ElapsedTime leftGrabTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
@@ -78,6 +80,8 @@ public class TeleOpCenterStage extends OpMode {
 
         leftGrabber = hardwareMap.get(Servo.class, "lgrab");
         rightGrabber = hardwareMap.get(Servo.class, "rgrab");
+
+        droneLauncher = hardwareMap.get(Servo.class, "plane");
     }
     public void loop() {
             // Drive
@@ -112,6 +116,7 @@ public class TeleOpCenterStage extends OpMode {
             backLeft.setPower(-yPosLeft01);
             backRight.setPower(yPosRight01);
         }
+
 
             // Lift
         //If there is a difference in motor positions, set the power multiplier of the faster motor to
@@ -153,48 +158,63 @@ public class TeleOpCenterStage extends OpMode {
             liftMotor2.setPower(0);
         }
 
-        if (gamepad1.y) {
-            liftToHeightEncoders(1, 0.25);
-        }
-        if (gamepad1.b) {
-            liftToHeightEncoders(2, 0.25);
-        }
+        //if (gamepad1.y) {
+        //    liftToHeightEncoders(1, 0.25);
+        //}
+        //if (gamepad1.b) {
+        //    liftToHeightEncoders(2, 0.25);
+        //}
 
 
             //Grabber Arm
-        leftServoArm.setPower(yPosLeft02);
+        //leftServoArm.setPower(yPosLeft02);
         rightServoArm.setPower(-yPosRight02);
 
             //Grabber
-        if (rightGrabberToggle && gamepad2.right_bumper && rightGrabTimer.milliseconds()>750){
+        if (yPosLeft02 > 0.5) { //TESTER FOR SERVO VALUES
+            pos += 0.01;
+        }
+        if (yPosLeft02 < -0.5) {
+            pos -= 0.01;
+        }
+        if (rightGrabberToggle && gamepad2.right_bumper && rightGrabTimer.milliseconds()>250){
             //open
-            rightGrabber.setPosition(0.6);
+            servoPos = 0.71;
             rightGrabberToggle = false;
             rightGrabTimer.reset();
-        } else if (!rightGrabberToggle && gamepad2.right_bumper && rightGrabTimer.milliseconds()>750) {
+        } else if (!rightGrabberToggle && gamepad2.right_bumper && rightGrabTimer.milliseconds()>250) {
             //closed
-            rightGrabber.setPosition(0.4);
+            servoPos = 0.86;
             rightGrabberToggle = true;
             rightGrabTimer.reset();
         }
-        if (leftGrabberToggle && gamepad2.left_bumper && leftGrabTimer.milliseconds()>750){
+        rightGrabber.setPosition(servoPos);
+
+        //if (leftGrabberToggle && gamepad2.left_bumper && leftGrabTimer.milliseconds()>750){
             //open
-            leftGrabber.setPosition(0.6);
-            leftGrabberToggle = false;
-            leftGrabTimer.reset();
-        } else if (!leftGrabberToggle && gamepad2.left_bumper && leftGrabTimer.milliseconds()>750) {
+        //    leftGrabber.setPosition(0.63);
+        //    leftGrabberToggle = false;
+        //    leftGrabTimer.reset();
+        //} else if (!leftGrabberToggle && gamepad2.left_bumper && leftGrabTimer.milliseconds()>750) {
             //closed
-            leftGrabber.setPosition(0.4);
-            leftGrabberToggle = true;
-            leftGrabTimer.reset();
+        //    leftGrabber.setPosition(0.4);
+        //    leftGrabberToggle = true;
+         //   leftGrabTimer.reset(); //0.59 open 0.63
+        //}
+
+            //Drone Launcher
+        if (gamepad1.b) {
+            //droneLauncher.setPosition(0.56);
         }
+        //droneLauncher.setPosition(pos);
 
         telemetry.addData("LiftPos1", -liftMotor1.getCurrentPosition());
         telemetry.addData("LiftPos2", liftMotor2.getCurrentPosition());
         telemetry.addData("Mult1", liftMultiplier1);
         telemetry.addData("Mult2", liftMultiplier2);
         telemetry.addData("servoPos", servoPos);
-        telemetry.addData("rightGrabber", Arrays.asList(new Double[] { rightGrabber.getPosition(), rightGrabTimer.seconds() }));
+        telemetry.addData("rightGrabber", Arrays.asList(new Double[] { rightGrabber.getPosition(), rightGrabTimer.seconds(), pos }));
+        telemetry.addData("dronePos", droneLauncher.getPosition());
         telemetry.update();
     }
 }
