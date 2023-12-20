@@ -18,14 +18,15 @@ public class AutoCenterStage extends LinearOpMode {
         //robot.setPoseEstimate(startPose);
         Pose2d startPose = new Pose2d(0,0,0);
         robot.setPoseEstimate(startPose);
+
         Trajectory moveToCones = robot.trajectoryBuilder(startPose)
                 .forward(24) // 24in
                 .build();
         Trajectory checkLeft = robot.trajectoryBuilder(moveToCones.end())
-                .lineToLinearHeading(new Pose2d(24, 0, Math.toRadians(-90)))
+                .lineToLinearHeading(new Pose2d(24,0, Math.toRadians(-90)))
                 .build();
         Trajectory goToRight = robot.trajectoryBuilder(checkLeft.end())
-                .lineToLinearHeading(new Pose2d(24, 0, Math.toRadians(180)))
+                .lineToLinearHeading(new Pose2d(24,0, Math.toRadians(180)))
                 .build();
         Trajectory park1 = robot.trajectoryBuilder(goToRight.end())
                 .lineToLinearHeading(new Pose2d(50,0, Math.toRadians(0)))
