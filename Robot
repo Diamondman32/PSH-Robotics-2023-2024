@@ -112,6 +112,7 @@ public class Robot extends MecanumDrive {
         //BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         //parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         //imu.initialize(parameters);
+
         imu = hardwareMap.get(BHI260IMU.class, "imu");
         imu.initialize(
             new BHI260IMU.Parameters(
@@ -121,7 +122,7 @@ public class Robot extends MecanumDrive {
                 )
             )
         );
-
+        /*
         leftFront = hardwareMap.get(DcMotorEx.class, "tl");//frontLeft
         leftRear = hardwareMap.get(DcMotorEx.class, "bl");//backLeft
         rightRear = hardwareMap.get(DcMotorEx.class, "br");//backRight
@@ -165,11 +166,11 @@ public class Robot extends MecanumDrive {
         liftMotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         //Initializing grabber
-        //grabber = hardwareMap.servo.get("grabber");
+        grabber = hardwareMap.servo.get("grabber");
 
         //Initializing Distance Sensor
         //frontDistanceSensor = hardwareMap.get(DistanceSensor.class, "frontDistanceSensor");
-
+        */
         List<Integer> lastTrackingEncPositions = new ArrayList<>();
         List<Integer> lastTrackingEncVels = new ArrayList<>();
 
