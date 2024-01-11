@@ -5,25 +5,21 @@ import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+
 @Autonomous(name = "AutoCenterStage")
 public class AutoCenterStage extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        Robot robot = new Robot(hardwareMap);
-        waitForStart();
-        if (isStopRequested()) return;
+        SampleMecanumDrive robot = new SampleMecanumDrive(hardwareMap);
 
-
-        //Pose2d startPose = new Pose2d(-36, 63, Math.toRadians(270));
-        //robot.setPoseEstimate(startPose);
-        Pose2d startPose = new Pose2d(0,0,0);
-        robot.setPoseEstimate(startPose);
-
-        Trajectory moveToCones = robot.trajectoryBuilder(startPose)
-                .forward(24) // 24in
+        Trajectory moveToCones = robot.trajectoryBuilder(new Pose2d())
+                .forward(40)
+                //.lineToLinearHeading(new Pose2d(24,0, Math.toRadians(0)))
                 .build();
-        Trajectory checkLeft = robot.trajectoryBuilder(moveToCones.end())
-                .lineToLinearHeading(new Pose2d(24,0, Math.toRadians(-90)))
+        TrajectorySequence checkLeft = robot.trajectorySequenceBuilder(moveToCones.end())
+                .turn(Math.toRadians(45))
+                .add
                 .build();
         Trajectory goToRight = robot.trajectoryBuilder(checkLeft.end())
                 .lineToLinearHeading(new Pose2d(24,0, Math.toRadians(180)))
@@ -34,6 +30,9 @@ public class AutoCenterStage extends LinearOpMode {
         Trajectory park2 = robot.trajectoryBuilder(park1.end())
                 .lineToLinearHeading(new Pose2d(50,98, Math.toRadians(0)))
                 .build();
+
+        waitForStart();
+        if (isStopRequested()) return;
 
         robot.followTrajectory(moveToCones);
         robot.followTrajectory(checkLeft);
