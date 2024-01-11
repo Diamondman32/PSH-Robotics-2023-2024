@@ -107,12 +107,6 @@ public class Robot extends MecanumDrive {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
 
-        // TODO: adjust the names of the following hardware devices to match your configuration
-        //imu = hardwareMap.get(BNO055IMU.class, "imu");
-        //BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        //parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
-        //imu.initialize(parameters);
-
         imu = hardwareMap.get(BHI260IMU.class, "imu");
         imu.initialize(
             new BHI260IMU.Parameters(
@@ -122,7 +116,7 @@ public class Robot extends MecanumDrive {
                 )
             )
         );
-        /*
+
         leftFront = hardwareMap.get(DcMotorEx.class, "tl");//frontLeft
         leftRear = hardwareMap.get(DcMotorEx.class, "bl");//backLeft
         rightRear = hardwareMap.get(DcMotorEx.class, "br");//backRight
@@ -147,14 +141,14 @@ public class Robot extends MecanumDrive {
         }
 
         //Setting Motor Directions
-        leftFront.setDirection(DcMotor.Direction.FORWARD);
-        leftRear.setDirection(DcMotor.Direction.FORWARD);
-        rightFront.setDirection(DcMotor.Direction.REVERSE);
-        rightRear.setDirection(DcMotor.Direction.REVERSE);
+        leftFront.setDirection(DcMotor.Direction.REVERSE);
+        leftRear.setDirection(DcMotor.Direction.REVERSE);
+        rightFront.setDirection(DcMotor.Direction.FORWARD);
+        rightRear.setDirection(DcMotor.Direction.FORWARD);
 
         //Initializing lift motors
-        liftMotor1 = hardwareMap.dcMotor.get("lm1");
-        liftMotor1.setDirection(DcMotor.Direction.FORWARD);
+        /*liftMotor1 = hardwareMap.dcMotor.get("lm1");
+        liftMotor1.setDirection(DcMotor.Direction.REVERSE);
         liftMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         liftMotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
