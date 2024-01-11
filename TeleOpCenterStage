@@ -24,6 +24,8 @@ public class TeleOpCenterStage extends OpMode {
     private boolean rightGrabberToggle = true;
     private boolean leftGrabberToggle = true;
     private double pos = 0.0;
+    private double liftMultiplier1 = 1;
+    private double liftMultiplier2 = 1;
 
 
     public ElapsedTime rightGrabTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
@@ -63,28 +65,40 @@ public class TeleOpCenterStage extends OpMode {
     }
 
     public void init() {
+        // Motors
         frontLeft = hardwareMap.get(DcMotorEx.class, "tl"); //top-left
         frontRight = hardwareMap.get(DcMotorEx.class, "tr"); //top-right
         backLeft = hardwareMap.get(DcMotorEx.class, "bl"); //back-left
         backRight = hardwareMap.get(DcMotorEx.class, "br"); //back-right
 
+        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        /*
         liftMotor1 = hardwareMap.get(DcMotorEx.class, "lm1"); //lift-motor-1 LEFT
-        liftMotor2 = hardwareMap.get(DcMotorEx.class, "lm2"); //lift-motor-2 RIGHT
+        liftMotor1.setDirection(DcMotor.Direction.REVERSE);
+        liftMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         liftMotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        liftMotor2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        liftMotor2 = hardwareMap.get(DcMotorEx.class, "lm2"); //lift-motor-2 RIGHT
+        liftMotor2.setDirection(DcMotor.Direction.FORWARD);
+        liftMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        liftMotor2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        // Continuous Servo
         leftServoArm = hardwareMap.get(CRServo.class, "lservoarm");
         rightServoArm = hardwareMap.get(CRServo.class, "rservoarm");
 
+        // Servo
         leftGrabber = hardwareMap.get(Servo.class, "lgrab");
         rightGrabber = hardwareMap.get(Servo.class, "rgrab");
 
-        droneLauncher = hardwareMap.get(Servo.class, "plane");
+        droneLauncher = hardwareMap.get(Servo.class, "plane");*/
     }
     public void loop() {
-            // Drive
+        // Drive
         float yPosLeft01 = -gamepad1.left_stick_y;
         float yPosRight01 = -gamepad1.right_stick_y;
         float yPosLeft02 = -gamepad2.left_stick_y;
@@ -92,67 +106,65 @@ public class TeleOpCenterStage extends OpMode {
 
         if(gamepad1.right_trigger > 0) {
             frontLeft.setPower(-gamepad1.right_trigger);
-            frontRight.setPower(gamepad1.right_trigger);
+            frontRight.setPower(-gamepad1.right_trigger);
             backLeft.setPower(gamepad1.right_trigger);
-            backRight.setPower(-gamepad1.right_trigger);
+            backRight.setPower(gamepad1.right_trigger);
         } else if(gamepad1.left_trigger > 0) {
             frontLeft.setPower(gamepad1.right_trigger);
-            frontRight.setPower(-gamepad1.right_trigger);
+            frontRight.setPower(gamepad1.right_trigger);
             backLeft.setPower(-gamepad1.right_trigger);
-            backRight.setPower(gamepad1.right_trigger);
+            backRight.setPower(-gamepad1.right_trigger);
         }else if(gamepad1.left_bumper) {
-            frontLeft.setPower(-yPosLeft01*0.5);
+            frontLeft.setPower(yPosLeft01*0.5);
             frontRight.setPower(yPosRight01*0.5);
-            backLeft.setPower(-yPosLeft01*0.5);
+            backLeft.setPower(yPosLeft01*0.5);
             backRight.setPower(yPosRight01*0.5);
         } else if(gamepad1.right_bumper) {
-            frontLeft.setPower(-yPosLeft01*0.5);
-            frontRight.setPower(yPosRight01*0.5);
-            backLeft.setPower(-yPosLeft01*0.5);
-            backRight.setPower(yPosRight01*0.5);
+            frontLeft.setPower(yPosLeft01*0.25);
+            frontRight.setPower(yPosRight01*0.25);
+            backLeft.setPower(yPosLeft01*0.25);
+            backRight.setPower(yPosRight01*0.25);
         } else {
-            frontLeft.setPower(-yPosLeft01);
+            frontLeft.setPower(yPosLeft01);
             frontRight.setPower(yPosRight01);
-            backLeft.setPower(-yPosLeft01);
+            backLeft.setPower(yPosLeft01);
             backRight.setPower(yPosRight01);
-        }
+        }/*
 
 
             // Lift
         //If there is a difference in motor positions, set the power multiplier of the faster motor to
         // the divided motor positions ALSO LIFT MOTOR 2 SPINS OPPOSITE WAY SO IT NEEDS TO BE NEGATIVE
-        double liftMultiplier1 = 1;
-        double liftMultiplier2 = 1;
-        if(Math.abs(Math.abs(liftMotor1.getCurrentPosition())-Math.abs(liftMotor2.getCurrentPosition())) > 15 &&
+        if(Math.abs(liftMotor1.getCurrentPosition()-liftMotor2.getCurrentPosition()) > 8 &&
                 liftMotor1.getCurrentPosition() != 0 && liftMotor2.getCurrentPosition() != 0) {
-            if (Math.abs(liftMotor1.getCurrentPosition())>Math.abs(liftMotor2.getCurrentPosition())) {
+            if (liftMotor1.getCurrentPosition()>liftMotor2.getCurrentPosition()) {
                 if (gamepad2.right_trigger > 0.03) { //if going up handicap higher motor
-                    //liftMultiplier2 = (double) Math.abs(liftMotor2.getCurrentPosition()/ (double) liftMotor1.getCurrentPosition());
                     liftMultiplier1 = 0.95;
                 } else if (gamepad2.left_trigger > 0.03) { //if going down handicap lower motor
-                    //liftMultiplier1 = (double) Math.abs(liftMotor2.getCurrentPosition()/ (double) liftMotor1.getCurrentPosition());
                     liftMultiplier2 = 0.95;
                 }
             } else {
                 if (gamepad2.right_trigger > 0.03) {
-                    //liftMultiplier2 = (double) Math.abs(liftMotor1.getCurrentPosition()/ (double) liftMotor2.getCurrentPosition());
-                    liftMultiplier1 = 0.95;
-                } else if (gamepad2.left_trigger > 0.03) {
-                    //liftMultiplier1 = (double) Math.abs(liftMotor1.getCurrentPosition()/ (double) liftMotor2.getCurrentPosition());
                     liftMultiplier2 = 0.95;
+                } else if (gamepad2.left_trigger > 0.03) {
+                    liftMultiplier1 = 0.95;
                 }
             }
         } else {
             liftMultiplier1 = 1.00;
-            liftMultiplier2 = 1.00; //MAKE LIMIT ~1600
+            liftMultiplier2 = 1.00;
         }
 
         if (gamepad2.right_trigger > 0.03) {
-            liftMotor1.setPower(gamepad2.right_trigger * liftMultiplier1);
-            liftMotor2.setPower(-1 * gamepad2.right_trigger * liftMultiplier2);
+            if (liftMotor1.getCurrentPosition() < 1000000)
+                liftMotor1.setPower(gamepad2.right_trigger * liftMultiplier1);
+            if (liftMotor2.getCurrentPosition() < 1000000)
+                liftMotor2.setPower(-1 * gamepad2.right_trigger * liftMultiplier2);
         } else if (gamepad2.left_trigger > 0.03) {
-            liftMotor1.setPower(-1 * gamepad2.left_trigger * liftMultiplier1);
-            liftMotor2.setPower(gamepad2.left_trigger * liftMultiplier2);
+            if (liftMotor1.getCurrentPosition() > 0)
+                liftMotor1.setPower(-1 * gamepad2.left_trigger * liftMultiplier1);
+            if (liftMotor2.getCurrentPosition() > 0)
+                liftMotor2.setPower(gamepad2.left_trigger * liftMultiplier2);
         } else {
             liftMotor1.setPower(0);
             liftMotor2.setPower(0);
@@ -166,23 +178,25 @@ public class TeleOpCenterStage extends OpMode {
         //}
 
 
-            //Grabber Arm
-        //leftServoArm.setPower(yPosLeft02);
+        // Grabber Arm
+        leftServoArm.setPower(yPosLeft02);
         rightServoArm.setPower(-yPosRight02);
 
-            //Grabber
-        if (yPosLeft02 > 0.5) { //TESTER FOR SERVO VALUES
-            pos += 0.01;
-        }
-        if (yPosLeft02 < -0.5) {
-            pos -= 0.01;
-        }
-        if (rightGrabberToggle && gamepad2.right_bumper && rightGrabTimer.milliseconds()>250){
+
+        //if (yPosLeft02 > 0.5) { //TESTER FOR SERVO VALUES
+        //    pos += 0.01;
+        //}
+        //if (yPosLeft02 < -0.5) {
+        //    pos -= 0.01;
+        //}
+
+        // Grabber
+        if (rightGrabberToggle && gamepad2.right_bumper && rightGrabTimer.milliseconds()>100){
             //open
             servoPos = 0.71;
             rightGrabberToggle = false;
             rightGrabTimer.reset();
-        } else if (!rightGrabberToggle && gamepad2.right_bumper && rightGrabTimer.milliseconds()>250) {
+        } else if (!rightGrabberToggle && gamepad2.right_bumper && rightGrabTimer.milliseconds()>100) {
             //closed
             servoPos = 0.86;
             rightGrabberToggle = true;
@@ -204,7 +218,7 @@ public class TeleOpCenterStage extends OpMode {
 
             //Drone Launcher
         if (gamepad1.b) {
-            //droneLauncher.setPosition(0.56);
+            droneLauncher.setPosition(0.56);
         }
         //droneLauncher.setPosition(pos);
 
@@ -213,8 +227,9 @@ public class TeleOpCenterStage extends OpMode {
         telemetry.addData("Mult1", liftMultiplier1);
         telemetry.addData("Mult2", liftMultiplier2);
         telemetry.addData("servoPos", servoPos);
-        telemetry.addData("rightGrabber", Arrays.asList(new Double[] { rightGrabber.getPosition(), rightGrabTimer.seconds(), pos }));
+        telemetry.addData("rightGrabber", Arrays.asList(rightGrabber.getPosition(), rightGrabTimer.seconds(), pos));
         telemetry.addData("dronePos", droneLauncher.getPosition());
         telemetry.update();
+        */
     }
 }
