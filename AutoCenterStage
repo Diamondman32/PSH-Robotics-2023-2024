@@ -4,53 +4,118 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
-@Autonomous(name = "AutoCenterStage")
-public class AutoCenterStage extends LinearOpMode {
+@Autonomous(name = "AutoCenterStageRedRight")
+public class AutoCenterStageRedRight extends LinearOpMode {
+    private ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     @Override
     public void runOpMode() throws InterruptedException {
-        SampleMecanumDrive robot = new SampleMecanumDrive(hardwareMap);
+        Robot robot = new Robot(hardwareMap);
 
-        Trajectory moveToCones = robot.trajectoryBuilder(new Pose2d())
-                .forward(40)
-                //.lineToLinearHeading(new Pose2d(24,0, Math.toRadians(0)))
+        boolean objFound = false;
+        int objPos = 0;
+
+        Trajectory gettingPastError = robot.trajectoryBuilder(new Pose2d())
+                .forward(1)
+                .build();
+        Trajectory moveToCones = robot.trajectoryBuilder(gettingPastError.end())
+                .lineToLinearHeading(new Pose2d(40,0,Math.toRadians(0)))
                 .build();
         TrajectorySequence checkLeft = robot.trajectorySequenceBuilder(moveToCones.end())
-                .turn(Math.toRadians(45))
-                .add
+                .turn(Math.toRadians(90))
+                //.lineToLinearHeading(new Pose2d(40,0,Math.toRadians(90)))
                 .build();
-        Trajectory goToRight = robot.trajectoryBuilder(checkLeft.end())
-                .lineToLinearHeading(new Pose2d(24,0, Math.toRadians(180)))
+        Trajectory capLeft = robot.trajectoryBuilder(checkLeft.end())
+                .lineToLinearHeading(new Pose2d(40,0,Math.toRadians(25)))
                 .build();
-        Trajectory park1 = robot.trajectoryBuilder(goToRight.end())
-                .lineToLinearHeading(new Pose2d(50,0, Math.toRadians(0)))
+        Trajectory capMiddle = robot.trajectoryBuilder(moveToCones.end())
+                .lineToLinearHeading(new Pose2d(40,0,Math.toRadians(0)))
                 .build();
-        Trajectory park2 = robot.trajectoryBuilder(park1.end())
-                .lineToLinearHeading(new Pose2d(50,98, Math.toRadians(0)))
+        Trajectory capRight = robot.trajectoryBuilder(checkLeft.end())
+                .lineToLinearHeading(new Pose2d(40,0,Math.toRadians(-25)))
+                .build();
+        Trajectory park1FromLeft = robot.trajectoryBuilder(capLeft.end())
+                .lineToLinearHeading(new Pose2d(80,0, Math.toRadians(0)))
+                .build();
+        Trajectory park1FromMiddle = robot.trajectoryBuilder(capMiddle.end())
+                .lineToLinearHeading(new Pose2d(80,0, Math.toRadians(0)))
+                .build();
+        Trajectory park1FromRight = robot.trajectoryBuilder(capRight.end())
+                .lineToLinearHeading(new Pose2d(80,0, Math.toRadians(0)))
+                .build();
+        Trajectory park2FromLeft = robot.trajectoryBuilder(capLeft.end())
+                .lineToLinearHeading(new Pose2d(80,-98, Math.toRadians(90)))
+                .build();
+        Trajectory park2FromMiddle = robot.trajectoryBuilder(capMiddle.end())
+                .lineToLinearHeading(new Pose2d(80,-98, Math.toRadians(90)))
+                .build();
+        Trajectory park2FromRight = robot.trajectoryBuilder(capRight.end())
+                .lineToLinearHeading(new Pose2d(80,-98, Math.toRadians(90)))
                 .build();
 
+        /*Trajectory traj1 = robot.trajectoryBuilder(new Pose2d())
+                .forward(1)
+                .build();
+        Trajectory traj2 = robot.trajectoryBuilder(traj1.end())
+                .lineToLinearHeading(new Pose2d(0,-40))
+                .build();*/
+
+        telemetry.addData("pos", objPos);
+        telemetry.addData("found?", objFound);
         waitForStart();
         if (isStopRequested()) return;
 
-        robot.followTrajectory(moveToCones);
-        robot.followTrajectory(checkLeft);
-        robot.followTrajectory(goToRight);
-        robot.followTrajectory(park1);
-        robot.followTrajectory(park2);
+        robot.setPoseEstimate(new Pose2d());
 
         //Drive to scan
+        robot.followTrajectory(gettingPastError);
+        robot.followTrajectory(moveToCones);
+        //scan forward if object cap it
+        if (robot.isDistClose(20)) {
+            objFound = true;
+            robot.followTrajectory(capMiddle);
+            objPos = 2;
+            telemetry.update();
+        }
+        //scan left ~90 deg
+        if (!objFound)
+            robot.followTrajectorySequenceAsync(checkLeft);
+        timer.reset();
+        while (timer.milliseconds() > 5000 && !objFound) {
+            robot.update();
+            if (robot.isDistClose(10)) {
+                objFound = true;
+                robot.followTrajectory(capLeft);
+                objPos = 1;
+                telemetry.update();
+            }
+        }
+        //if object found cap left otherwise cap right
+        if (!objFound) {
+            robot.followTrajectory(capRight);
+            objPos = 3;
+            telemetry.update();
 
-            //scan forward if object cap it
+        }
+        //go forward to clear pole
+        if (objPos == 1) {
+            //robot.turn(Math.toRadians(90));
+            robot.followTrajectory(park1FromLeft);
+            robot.followTrajectory(park2FromLeft);
+        }
+        if (objPos == 2) {
+            robot.followTrajectory(park1FromMiddle);
+            robot.followTrajectory(park2FromMiddle);
+        }
+        if (objPos == 3) {
+            robot.followTrajectory(park1FromRight);
+            robot.followTrajectory(park2FromRight);
+        }
 
-            //scan left ~90 deg if object cap it
-
-            //cap right
-
-            //reset to forward
-
-            //drive to park
-
+        //robot.followTrajectory(traj1);
+        //robot.followTrajectory(traj2);
     }
 }
