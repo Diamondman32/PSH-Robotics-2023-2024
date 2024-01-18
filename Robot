@@ -36,6 +36,7 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
@@ -88,9 +89,9 @@ public class Robot extends MecanumDrive {
     private List<Integer> lastEncVels = new ArrayList<>();
 
     //Personal Instantiation Stuff
-    public Servo grabber;
-    public DcMotor liftMotor1, liftMotor2;
-    //public DistanceSensor frontDistanceSensor;
+    public Servo leftGrabber, rightGrabber, leftGrabberPivot, rightGrabberPivot, droneLauncher;;
+    public DcMotor liftMotor1, liftMotor2, pixArm;
+    public DistanceSensor distanceSensor;
 
 
     public Robot(HardwareMap hardwareMap) {
@@ -112,7 +113,7 @@ public class Robot extends MecanumDrive {
             new BHI260IMU.Parameters(
                 new RevHubOrientationOnRobot(
                     RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                    RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD
+                    RevHubOrientationOnRobot.UsbFacingDirection.RIGHT
                 )
             )
         );
@@ -147,24 +148,33 @@ public class Robot extends MecanumDrive {
         rightRear.setDirection(DcMotor.Direction.FORWARD);
 
         //Initializing lift motors
-        /*liftMotor1 = hardwareMap.dcMotor.get("lm1");
-        liftMotor1.setDirection(DcMotor.Direction.REVERSE);
+        liftMotor1 = hardwareMap.dcMotor.get("lm1");
+        liftMotor1.setDirection(DcMotor.Direction.FORWARD);
         liftMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         liftMotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         liftMotor2 = hardwareMap.dcMotor.get("lm2");
-        liftMotor2.setDirection(DcMotor.Direction.FORWARD);
+        liftMotor2.setDirection(DcMotor.Direction.REVERSE);
         liftMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         liftMotor2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        //Initializing grabber
-        grabber = hardwareMap.servo.get("grabber");
+        pixArm = hardwareMap.get(DcMotorEx.class, "arm");
+        pixArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        //Servos
+        leftGrabber = hardwareMap.get(Servo.class, "grabLeft");
+        rightGrabber = hardwareMap.get(Servo.class, "grabRight");
+
+        leftGrabberPivot = hardwareMap.get(Servo.class, "grabPivotLeft");
+        rightGrabberPivot = hardwareMap.get(Servo.class, "grabPivotRight");
+
+        droneLauncher = hardwareMap.get(Servo.class, "plane");
 
         //Initializing Distance Sensor
-        //frontDistanceSensor = hardwareMap.get(DistanceSensor.class, "frontDistanceSensor");
-        */
+        distanceSensor = hardwareMap.get(DistanceSensor.class, "distance");
+
         List<Integer> lastTrackingEncPositions = new ArrayList<>();
         List<Integer> lastTrackingEncVels = new ArrayList<>();
 
@@ -379,6 +389,14 @@ public class Robot extends MecanumDrive {
         liftMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         liftMotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
+
+    public boolean isDistClose(int i) {
+        if (distanceSensor.getDistance(DistanceUnit.INCH) > i) {
+            return true;
+        }
+        return false;
+    }
+
     /*
     //Grabber Controls
     public void closeGrabber()  {
