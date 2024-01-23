@@ -14,15 +14,14 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @TeleOp(group="drive")
-public class TeleOpCenterStage extends OpMode {
+public class TeleOpCS extends OpMode {
     private DcMotor frontLeft, frontRight, backLeft, backRight, liftMotor1, liftMotor2, pixArm;
     private Servo leftGrabber, rightGrabber, leftGrabberPivot, rightGrabberPivot, droneLauncher;
     private DistanceSensor distanceSensor;
-    private double rightGrabPos, leftGrabPos, pivotPos, speedMultiplier; //for Grabber Arm
+    private double rightGrabPos, leftGrabPos, pivotPos, dronePos, speedMultiplier; //for Grabber Arm
     private boolean leftGrabberToggle, rightGrabberToggle, droneToggle, pivotToggle, armToggle, speedToggle = true;
     private double pos = 0.0;
     private double liftMultiplier1, liftMultiplier2 = 1;
-    private int armValue;
     private ElapsedTime rightGrabTimer, leftGrabTimer, droneTimer, pivotTimer, armTimer, speedTimer;
 
 
@@ -58,12 +57,12 @@ public class TeleOpCenterStage extends OpMode {
         liftMotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
+    private int armValue = 0;
     private void armToHeightEncoders(int level, double power) {
-        armValue = 0;
         if (level == 0) {
             armValue = 0;
         } else if (level == 1) {
-            armValue = 110;
+            armValue = 165;
         }
 
         pixArm.setTargetPosition(armValue);
@@ -85,8 +84,17 @@ public class TeleOpCenterStage extends OpMode {
         backLeft = hardwareMap.get(DcMotorEx.class, "bl"); //back-left
         backRight = hardwareMap.get(DcMotorEx.class, "br"); //back-right
 
-        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+
+        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         liftMotor1 = hardwareMap.get(DcMotorEx.class, "lm1"); //lift-motor-1 LEFT
         liftMotor1.setDirection(DcMotor.Direction.FORWARD);
@@ -119,6 +127,7 @@ public class TeleOpCenterStage extends OpMode {
         pivotPos = 0.57;
 
         droneLauncher = hardwareMap.get(Servo.class, "plane");
+        dronePos = 0.86;
 
         // Distance Sensor
         distanceSensor = hardwareMap.get(DistanceSensor.class, "distance");
@@ -161,7 +170,7 @@ public class TeleOpCenterStage extends OpMode {
         }
 
 
-            // Lift
+        // Lift
         //If there is a difference in motor positions, set the power multiplier of the faster motor to
         // the divided motor positions ALSO LIFT MOTOR 2 SPINS OPPOSITE WAY SO IT NEEDS TO BE NEGATIVE
         if(Math.abs(liftMotor1.getCurrentPosition()-liftMotor2.getCurrentPosition()) > 8 &&
@@ -213,12 +222,14 @@ public class TeleOpCenterStage extends OpMode {
             armTimer.reset();
         } else if (!armToggle && gamepad2.x && armTimer.milliseconds()>500) {
             //down
-            armToHeightEncoders(0,0.7);
+            armToHeightEncoders(0,0.5);
             armToggle = true;
             armTimer.reset();
         }
-        if (pixArm.isBusy() && 5 > Math.abs(pixArm.getCurrentPosition()-armValue)) {
-            liftToHeightEncoders(-1, 0);//Level -1 doesn't change liftValue, sets power to 0
+        if (5 > Math.abs(pixArm.getCurrentPosition()-armValue) && pixArm.getCurrentPosition() > 50) {
+            armToHeightEncoders(-1, 0.5);//Level -1 doesn't change liftValue, sets power to 0
+        } else if(5 > Math.abs(pixArm.getCurrentPosition()-armValue)) {
+            armToHeightEncoders(-1,0);
         }
 
 
@@ -263,25 +274,26 @@ public class TeleOpCenterStage extends OpMode {
         rightGrabberPivot.setPosition(pivotPos);
         leftGrabberPivot.setPosition(1-pivotPos);
 
-            //Drone Launcher
+        //Drone Launcher
         if (droneToggle && gamepad1.x && droneTimer.milliseconds()>500) {
             //open
-            droneLauncher.setPosition(0.5);
+            dronePos = 0.5;
             droneToggle = false;
             droneTimer.reset();
         } else if (!droneToggle && gamepad1.x && droneTimer.milliseconds()>500) {
             //closed
-            droneLauncher.setPosition(0.86);
+            dronePos = 0.86;
             droneToggle = true;
             droneTimer.reset();
         }
+        droneLauncher.setPosition(dronePos);
 
         /*telemetry.addData("LiftPos1", liftMotor1.getCurrentPosition());
         telemetry.addData("LiftPos2", liftMotor2.getCurrentPosition());
         telemetry.addData("Mult1", liftMultiplier1);
         telemetry.addData("Mult2", liftMultiplier2);
-        telemetry.addData("Encoder Diff", Math.abs(liftMotor1.getCurrentPosition()-liftMotor2.getCurrentPosition()));
-        telemetry.addData("dist", distanceSensor.getDistance(DistanceUnit.INCH));*/
+        telemetry.addData("Encoder Diff", Math.abs(liftMotor1.getCurrentPosition()-liftMotor2.getCurrentPosition()));*/
+        telemetry.addData("dist", distanceSensor.getDistance(DistanceUnit.INCH));
         telemetry.addData("Arm Encoder", pixArm.getCurrentPosition());
         telemetry.addData("busy", pixArm.isBusy());
         telemetry.addData("Arm target", armValue);
