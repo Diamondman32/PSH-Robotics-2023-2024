@@ -35,10 +35,10 @@ public class AutoCSRedRight extends LinearOpMode {
                 .forward(10)
                 .build();
         Trajectory rotate1 = robot.trajectoryBuilder(capLeft.end())
-                .lineToLinearHeading(new Pose2d(30,0, Math.toRadians(-60)))
+                .lineToLinearHeading(new Pose2d(30,0, Math.toRadians(-100)))
                 .build();
         Trajectory moveToBoard1 = robot.trajectoryBuilder(rotate1.end())
-                .lineToLinearHeading(new Pose2d(30,-30, Math.toRadians(-60)))
+                .lineToLinearHeading(new Pose2d(30,-30))
                 .build();
 
 
@@ -55,8 +55,6 @@ public class AutoCSRedRight extends LinearOpMode {
         //Drive to scan
         robot.followTrajectory(moveToCones);
         //scan forward if object cap it
-        telemetry.addData("dist",robot.getDist());
-        telemetry.update();
         if (robot.isDistClose(15)) {
             objFound = true;
             objPos = 2;
@@ -102,7 +100,12 @@ public class AutoCSRedRight extends LinearOpMode {
         //go forward to clear pole
         if (objPos == 1) {
             //robot.turn(Math.toRadians(90));
-            robot.followTrajectory(rotate1);
+            robot.followTrajectoryAsync(rotate1);
+            while(!robot.isRotated(90))
+                robot.update();
+            robot.breakFollowing();
+            telemetry.addData("dist",robot.getDist());
+            telemetry.update();
             robot.followTrajectory(moveToBoard1);
         }
         /*if (objPos == 2) {
