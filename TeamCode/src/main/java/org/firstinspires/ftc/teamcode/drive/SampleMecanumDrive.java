@@ -68,25 +68,33 @@ public class SampleMecanumDrive extends MecanumDrive {
     public static double VY_WEIGHT = 1;
     public static double OMEGA_WEIGHT = 1;
 
-    private TrajectorySequenceRunner trajectorySequenceRunner;
+    private final TrajectorySequenceRunner trajectorySequenceRunner;
 
     private static final TrajectoryVelocityConstraint VEL_CONSTRAINT = getVelocityConstraint(MAX_VEL, MAX_ANG_VEL, TRACK_WIDTH);
     private static final TrajectoryAccelerationConstraint ACCEL_CONSTRAINT = getAccelerationConstraint(MAX_ACCEL);
 
-    private TrajectoryFollower follower;
+    private final TrajectoryFollower follower;
 
-    private DcMotorEx leftFront, leftRear, rightRear, rightFront;
-    private List<DcMotorEx> motors;
+    private final DcMotorEx leftFront;
+    private final DcMotorEx leftRear;
+    private final DcMotorEx rightRear;
+    private final DcMotorEx rightFront;
+    private final List<DcMotorEx> motors;
 
-    private IMU imu;
-    private VoltageSensor batteryVoltageSensor;
+    private final IMU imu;
+    private final VoltageSensor batteryVoltageSensor;
 
-    private List<Integer> lastEncPositions = new ArrayList<>();
-    private List<Integer> lastEncVels = new ArrayList<>();
+    private final List<Integer> lastEncPositions = new ArrayList<>();
+    private final List<Integer> lastEncVels = new ArrayList<>();
 
-    private Servo leftGrabber, rightGrabber, leftGrabberPivot, rightGrabberPivot;
-    private DcMotor liftMotor1, liftMotor2, pixArm;
-    private DistanceSensor distanceSensor;
+    private final Servo leftGrabber;
+    private final Servo rightGrabber;
+    private final Servo leftGrabberPivot;
+    private final Servo rightGrabberPivot;
+    private final DcMotor liftMotor1;
+    private final DcMotor liftMotor2;
+    private final DcMotor pixArm;
+    private final DistanceSensor distanceSensor;
 
     public SampleMecanumDrive(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
@@ -386,10 +394,7 @@ public class SampleMecanumDrive extends MecanumDrive {
     }
 
     public boolean isDistClose(int i) {
-        if (distanceSensor.getDistance(DistanceUnit.INCH) < i) {
-            return true;
-        }
-        return false;
+        return distanceSensor.getDistance(DistanceUnit.INCH) < i;
     }
     public double getDist() {return distanceSensor.getDistance(DistanceUnit.INCH);}
     public void setArmPos(int level) {

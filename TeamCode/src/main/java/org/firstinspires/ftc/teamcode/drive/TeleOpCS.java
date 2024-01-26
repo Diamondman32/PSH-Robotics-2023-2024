@@ -15,7 +15,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-// hello
+
 @TeleOp(group="drive")
 public class TeleOpCS extends OpMode {
     private DcMotor frontLeft, frontRight, backLeft, backRight, liftMotor1, liftMotor2, pixArm;
@@ -23,7 +23,7 @@ public class TeleOpCS extends OpMode {
     private DistanceSensor distanceSensor;
     private double rightGrabPos, leftGrabPos, pivotPos, dronePos, speedMultiplier; //for Grabber Arm
     private boolean leftGrabberToggle, rightGrabberToggle, droneToggle, pivotToggle, armToggle1, armToggle2, speedToggle = true;
-    private double pos = 0.0;
+    private final double pos = 0.0;
     private double liftMultiplier1, liftMultiplier2 = 1;
     private ElapsedTime rightGrabTimer, leftGrabTimer, droneTimer, pivotTimer, armTimer, speedTimer;
     private IMU imu;
