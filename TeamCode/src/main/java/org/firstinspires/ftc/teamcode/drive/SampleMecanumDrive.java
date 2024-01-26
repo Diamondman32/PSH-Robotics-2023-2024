@@ -431,6 +431,7 @@ public class SampleMecanumDrive extends MecanumDrive {
     public void setIsRotatedStartDeg(double startDeg) {
         this.startDeg = startDeg;
     }
+    // Returns false until the robot has turned to the desired angle [old imu]
     public boolean isRotated(double degrees) {
         if (degrees<0)  //turning right
             return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS)-Math.toRadians(startDeg+1e6)<=Math.toRadians(degrees-(startDeg+1e6));
