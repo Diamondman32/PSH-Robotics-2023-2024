@@ -142,11 +142,11 @@ public class AutoCSRedRight extends LinearOpMode {
         if (objPos == 1) {
             robot.followTrajectoryAsync(rotate1);
             robot.update();
-            telemetry.addData("initYaw", robot.getYaw());
-            telemetry.update();
+            double initYaw = robot.getYaw();
             robot.setIsRotatedStartDeg(robot.getYaw());
-            while (!robot.isRotated(-78)) {
+            while (!robot.isRotated(-80)) {
                 robot.update();
+                telemetry.addData("initYaw", initYaw);
                 telemetry.addData("yaw", robot.getYaw());
                 telemetry.update();
             }
@@ -157,8 +157,9 @@ public class AutoCSRedRight extends LinearOpMode {
             robot.followTrajectory(goToBoard1);
             robot.setRightGrabber(0.7);
             sleep(100);
-            robot.followTrajectory(park1);
             robot.setPivot(0.6);
+            sleep(100);
+            robot.followTrajectory(park1);
             robot.setArmPos(0);
             sleep(100);
             robot.setArmPos(-1);
