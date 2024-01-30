@@ -46,7 +46,7 @@ public class DriveConstants {
      */
     public static double WHEEL_RADIUS = 2; // in
     public static double GEAR_RATIO = 1.73333333333; // output (wheel) speed / input (motor) speed
-    public static double TRACK_WIDTH = 21; // in should be 11
+    public static double TRACK_WIDTH = 21; // in should be 11 (21)[18.95]
 
     /*
      * These are the feedforward parameters used to model the drive motor behavior. If you are using
@@ -54,10 +54,15 @@ public class DriveConstants {
      * motor encoders or have elected not to use them for velocity control, these values should be
      * empirically tuned.
      */
-    public static double kV = 0.0251; //0.07639443721; //1.0 / rpmToVelocity(MAX_RPM);
+    public static double kV = 0.0251; //1.0 / rpmToVelocity(MAX_RPM);
     public static double kA = 0.0055;
     public static double kStatic = 0.005;
 
+    /*  AUTO                      NEW MANUAL           OLD MANUAL
+    kV = 0.02244                  kV = 0.0235          kV = 0.0251
+    kA = 0.00037                  kA = 0.006           kA = 0.0055
+    kStatic = 0.11104             kStatic = 0.005      kStatic = 0.005
+     */
     /*
      * These values are used to generate the trajectories for you robot. To ensure proper operation,
      * the constraints should never exceed ~80% of the robot's actual capabilities. While Road
@@ -65,9 +70,9 @@ public class DriveConstants {
      * small and gradually increase them later after everything is working. All distance units are
      * inches.
      */
-    public static double MAX_VEL = 30; //previously 42.5
+    public static double MAX_VEL = 33.277; //previously 42.5
     public static double MAX_ACCEL = 30;
-    public static double MAX_ANG_VEL = Math.toRadians(60);
+    public static double MAX_ANG_VEL = 2.285508;//Math.toRadians(60);
     public static double MAX_ANG_ACCEL = Math.toRadians(60);
 
     /*
@@ -77,7 +82,6 @@ public class DriveConstants {
             RevHubOrientationOnRobot.LogoFacingDirection.UP;
     public static RevHubOrientationOnRobot.UsbFacingDirection USB_FACING_DIR =
             RevHubOrientationOnRobot.UsbFacingDirection.LEFT;
-
 
     public static double encoderTicksToInches(double ticks) {
         return WHEEL_RADIUS * 2 * Math.PI * GEAR_RATIO * ticks / TICKS_PER_REV;

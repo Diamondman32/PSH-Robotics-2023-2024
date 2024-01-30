@@ -444,4 +444,10 @@ public class SampleMecanumDrive extends MecanumDrive {
     public void resetYaw() {
         imu.resetYaw();
     }
+    public void manualMotorPower(double frontLeft, double frontRight, double backLeft, double backRight) {
+        leftFront.setPower(frontLeft);
+        leftRear.setPower(backLeft);
+        rightFront.setPower(frontRight);
+        rightRear.setPower(backRight);
+    }
 }
