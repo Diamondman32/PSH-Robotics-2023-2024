@@ -11,13 +11,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @Autonomous(name = "AutoCSRedRight")
 @Config
 public class AutoCSRedRight extends LinearOpMode {
-    public static int x = 65;
-    public static int y = -95;
-    public static int heading = -90;
-
-    public static double i = 85;
-    public static double i2 = 85;
-
     private final ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     @Override
     public void runOpMode() throws InterruptedException {
@@ -32,16 +25,16 @@ public class AutoCSRedRight extends LinearOpMode {
                 .forward(1)
                 .build();
         Trajectory moveToCones = robot.trajectoryBuilder(error.end())
-                .lineToConstantHeading(new Vector2d(20,0))
+                .lineToConstantHeading(new Vector2d(21,0))
                 .build();
         Trajectory capMiddle = robot.trajectoryBuilder(moveToCones.end())
                 .lineToConstantHeading(new Vector2d(31,0))//28
                 .build();
         Trajectory checkRight = robot.trajectoryBuilder(moveToCones.end())
-                .lineToLinearHeading(new Pose2d(17,0,Math.toRadians(-24)))
+                .lineToLinearHeading(new Pose2d(18,2,Math.toRadians(-40)))//-28
                 .build();
         Trajectory capLeft = robot.trajectoryBuilder(checkRight.end())
-                .lineToLinearHeading(new Pose2d(20,5,Math.toRadians(32)))
+                .lineToLinearHeading(new Pose2d(20,5,Math.toRadians(25)))//32
                 .build();
         Trajectory capRight = robot.trajectoryBuilder(checkRight.end())
                 .forward(10)
@@ -51,7 +44,7 @@ public class AutoCSRedRight extends LinearOpMode {
                 .lineToLinearHeading(new Pose2d(30,0, Math.toRadians(-100)))
                 .build();
         Trajectory alignWithBoard1 = robot.trajectoryBuilder(rotate1.end())
-                .lineToConstantHeading(new Vector2d(90,-35))//85
+                .lineToConstantHeading(new Vector2d(65,-35))//90
                 .build();
         Trajectory goToBoard1 = robot.trajectoryBuilder(alignWithBoard1.end())
                 .forward(30)
@@ -68,7 +61,7 @@ public class AutoCSRedRight extends LinearOpMode {
                 .lineToLinearHeading(new Pose2d(30,0, Math.toRadians(-100)))
                 .build();
         Trajectory alignWithBoard2 = robot.trajectoryBuilder(rotate2.end())
-                .lineToConstantHeading(new Vector2d(58,-35))
+                .lineToConstantHeading(new Vector2d(56,-35))
                 .build();
         Trajectory goToBoard2 = robot.trajectoryBuilder(alignWithBoard2.end())
                 .forward(28)
@@ -80,11 +73,8 @@ public class AutoCSRedRight extends LinearOpMode {
         Trajectory rotate3 = robot.trajectoryBuilder(capRight.end())
                 .lineToLinearHeading(new Pose2d(30,0, Math.toRadians(-100)))
                 .build();
-        Trajectory alignWithBoard3 = robot.trajectoryBuilder(rotate3.end())
-                .lineToConstantHeading(new Vector2d(i2,-35))
-                .build();
-        Trajectory goToBoard3 = robot.trajectoryBuilder(alignWithBoard3.end())
-                .lineTo(new Vector2d(30,-30))
+        Trajectory goToBoard3 = robot.trajectoryBuilder(rotate3.end())
+                .lineToConstantHeading(new Vector2d(50,-35))
                 .build();
 //        Trajectory park3 = robot.trajectoryBuilder(moveToBoard3.end())
 //                .lineTo(new Vector2d(0,-30))
@@ -107,7 +97,7 @@ public class AutoCSRedRight extends LinearOpMode {
         //Drive to scan
         robot.followTrajectory(moveToCones);
         //scan forward if object cap it
-        if (robot.isDistClose(14)) {
+        if (robot.isDistClose(10)) {
             telemetry.addData("dist",robot.getDist());
             telemetry.update();
             objFound = true;
@@ -124,16 +114,63 @@ public class AutoCSRedRight extends LinearOpMode {
             sleep(500);
         }
 
-        //scan left ~90 deg
-        if (!objFound) //ASYNC FINDING
+        //scan left ~90 deg WHY DOESNT THIS WORK
+        /*if (!objFound) { //ASYNC FINDING
+            robot.followTrajectoryAsync(checkRight);
+            timer.reset();
+            while (timer.milliseconds() < 1000 && !objFound) {
+                robot.update();
+                telemetry.addData("dist", robot.getDist());
+                telemetry.update();
+                if (robot.isDistClose(12)) {//10
+                    robot.breakFollowing();
+                    objFound = true;
+                    objPos = 3;
+                    robot.setPivot(0.1);
+                    sleep(500);
+                    robot.followTrajectory(capRight);
+                    robot.setLeftGrabber(0.61);
+                    sleep(100);
+                    robot.setPivot(0.6);
+                    sleep(50);
+                    robot.setLeftGrabber(0.37);
+                    sleep(500);
+                }
+            }
+        }*/
+
+        /*if (!objFound) //ASYNC FINDING
             robot.followTrajectoryAsync(checkRight);
         timer.reset();
         while (timer.milliseconds() < 1000 && !objFound) {
             robot.update();
             telemetry.addData("dist",robot.getDist());
             telemetry.update();
-            if (robot.isDistClose(11)) {//10
-                robot.breakFollowing();
+                if (robot.isDistClose(15)) {//10
+                    robot.breakFollowing();
+                    objFound = true;
+                    objPos = 3;
+                    robot.setPivot(0.1);
+                    sleep(500);
+                    robot.followTrajectory(capRight);
+                    robot.setLeftGrabber(0.61);
+                    sleep(100);
+                    robot.setPivot(0.6);
+                    sleep(50);
+                    robot.setLeftGrabber(0.37);
+                    sleep(500);
+                }
+            }*/
+
+        if (!objFound) {
+            robot.setIsRotatedStartDeg(0);
+            robot.followTrajectoryAsync(checkRight);
+            while (!robot.isRotated(-30)) {
+                robot.update();
+            }
+            robot.breakFollowing();
+            robot.manualMotorPower(0, 0, 0, 0);
+            if (robot.isDistClose(10)) {
                 objFound = true;
                 objPos = 3;
                 robot.setPivot(0.1);
@@ -185,12 +222,12 @@ public class AutoCSRedRight extends LinearOpMode {
             robot.setArmPos(0);
             sleep(100);
             //robot.followTrajectory(park1);
-            robot.manualMotorPower(1.0,-1.0,-1.0,1.0);
+            robot.manualMotorPower(0.9,-1.0,-1.0,0.9);
             sleep(3500);
             robot.manualMotorPower(0,0,0,0);
             robot.setArmPos(-1);
-            robot.manualMotorPower(.3,.3,.3,.3);
-            sleep(800);
+//            sleep(200);
+//            robot.manualMotorPower(0,0,0,0);
         }
 
         if (objPos == 2) {
@@ -221,9 +258,8 @@ public class AutoCSRedRight extends LinearOpMode {
             robot.manualMotorPower(-.4,-.4,-.4,-.4);
             sleep(100);
             robot.manualMotorPower(0.9,-1.0,-1.0,0.9);
-            sleep(3000);
-            robot.manualMotorPower(.4,0.4,0.4,0.4);
-            sleep(500);
+            sleep(2600);
+            robot.manualMotorPower(0,0,0,0);
             robot.setArmPos(-1);
         }
         if (objPos == 3) {
@@ -231,14 +267,13 @@ public class AutoCSRedRight extends LinearOpMode {
             robot.update();
             double initYaw = robot.getYaw();
             robot.setIsRotatedStartDeg(robot.getYaw());
-            while (!robot.isRotated(-80)) {
+            while (!robot.isRotated(-76)) {
                 robot.update();
                 telemetry.addData("initYaw", initYaw);
                 telemetry.addData("yaw", robot.getYaw());
                 telemetry.update();
             }
             robot.breakFollowing();
-            robot.followTrajectory(alignWithBoard3);
             robot.setArmPos(1);
             robot.setPivot(0.24);
             robot.followTrajectory(goToBoard3);
@@ -248,8 +283,8 @@ public class AutoCSRedRight extends LinearOpMode {
             robot.setArmPos(0);
             sleep(100);
             //robot.followTrajectory(park1);
-            robot.manualMotorPower(1.0,-1.0,-1.0,1.0);
-            sleep(4000);
+            robot.manualMotorPower(0.9,-1.0,-1.0,0.9);
+            sleep(1700);
             robot.manualMotorPower(0,0,0,0);
             robot.setArmPos(-1);
         }
