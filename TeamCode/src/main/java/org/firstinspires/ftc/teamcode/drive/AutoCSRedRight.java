@@ -20,7 +20,7 @@ public class AutoCSRedRight extends LinearOpMode {
 
     private final ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     @Override
-   public void runOpMode() throws InterruptedException {
+    public void runOpMode() throws InterruptedException {
         SampleMecanumDrive robot = new SampleMecanumDrive(hardwareMap);
 
         boolean objFound = false;
