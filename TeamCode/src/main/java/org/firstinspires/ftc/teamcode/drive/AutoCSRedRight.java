@@ -8,15 +8,13 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.drive.opmode.SampleMecanumDrive;
-
 @Autonomous(name = "AutoCSRedRight")
 @Config
 public class AutoCSRedRight extends LinearOpMode {
     private final ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     @Override
     public void runOpMode() throws InterruptedException {
-        SampleMecanumDrive robot = new SampleMecanumDrive(hardwareMap);
+        Robot robot = new Robot(hardwareMap);
 
         boolean objFound = false;
         int objPos = 0;
