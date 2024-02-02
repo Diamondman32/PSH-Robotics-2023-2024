@@ -60,6 +60,7 @@ import static java.lang.Thread.sleep;
  */
 @Config
 public class Robot extends MecanumDrive {
+    public final double pi = Math.PI;
     public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0, 0);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
 
@@ -438,6 +439,45 @@ public class Robot extends MecanumDrive {
             return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS)-Math.toRadians(startDeg+1e6)<=Math.toRadians(degrees-(startDeg+1e6));
         else //turning left
             return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS)-Math.toRadians(startDeg+1e6)>=Math.toRadians(degrees-(startDeg+1e6));
+    }
+    /*public void turnDegrees(double targetDegrees, double degrees) {
+        while (true) {
+            if (degrees>targetDegrees) { //turning right
+                if (Math.abs(getYaw())-Math.abs(targetDegrees)<25) {
+                    manualMotorPower(1*(Math.abs(getYaw())/Math.abs(targetDegrees)),-0.2,0.2,-0.2);
+                }
+                //once it has reacher a certain degree that is close, set power to some relation of the degree
+            } else {//turning left
+                if (Math.abs(getYaw())-Math.abs(targetDegrees)<25) {
+                    manualMotorPower(-0.2,0.2,-0.2,0.2);
+                }
+            }
+        }
+    }*/
+    public void turnDegrees(double targetDegrees) {
+        double frontLeftPower = 1;
+        double frontRightPower = 1;
+        double backLeftPower = 1;
+        double backRightPower = 1;
+        while (1==1) {
+            if (getYaw()>targetDegrees) { //turning right //((2*Math.abs(Math.atan(0.5*(Math.abs(currentDegrees)-Math.abs(targetDegrees)))/pi
+                frontLeftPower = (2*Math.abs(Math.atan(.2*(Math.abs(getYaw())-Math.abs(targetDegrees)))))/pi;
+                backLeftPower = (2*Math.abs(Math.atan(0.2*(Math.abs(getYaw())-Math.abs(targetDegrees)))))/pi;
+                frontRightPower =-(2*Math.abs(Math.atan(0.2*(Math.abs(getYaw())-Math.abs(targetDegrees)))))/pi;
+                backRightPower = -(2*Math.abs(Math.atan(0.2*(Math.abs(getYaw())-Math.abs(targetDegrees)))))/pi;
+            }
+            else {//turning left
+                frontLeftPower = -(2*Math.abs(Math.atan(0.2*(Math.abs(getYaw())-Math.abs(targetDegrees)))))/pi;
+                backLeftPower = -(2*Math.abs(Math.atan(0.2*(Math.abs(getYaw())-Math.abs(targetDegrees)))))/pi;
+                frontRightPower = (2*Math.abs(Math.atan(0.2*(Math.abs(getYaw())-Math.abs(targetDegrees)))))/pi;
+                backRightPower = (2*Math.abs(Math.atan(0.2*(Math.abs(getYaw())-Math.abs(targetDegrees)))))/pi;
+            }//((2 / pi) * Math.abs(Math.atan(.5 * ((Math.abs(currentDegrees) - Math.abs(targetDegrees))))))
+            manualMotorPower(frontLeftPower,frontRightPower,backLeftPower,backRightPower);
+            if (Math.abs(Math.abs(getYaw()) - Math.abs(targetDegrees)) < 20) {
+                manualMotorPower(0,0,0,0);
+                return;
+            }
+        }
     }
     public double getYaw() {
         return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);

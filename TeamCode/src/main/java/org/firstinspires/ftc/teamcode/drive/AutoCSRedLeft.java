@@ -31,33 +31,33 @@ public class AutoCSRedLeft extends LinearOpMode {
         Trajectory checkLeft = robot.trajectoryBuilder(moveToCones.end())
                 .lineToLinearHeading(new Pose2d(18,-2,Math.toRadians(40)))
                 .build();
-        Trajectory capLeft = robot.trajectoryBuilder(checkLeft.end())
+        Trajectory capLeft = robot.trajectoryBuilder(new Pose2d(moveToCones.end().getX(),moveToCones.end().getY(),63))
                 .forward(8)
                 .build();
-        Trajectory capRight = robot.trajectoryBuilder(checkLeft.end())
+        Trajectory capRight = robot.trajectoryBuilder(new Pose2d(moveToCones.end().getX(),moveToCones.end().getY(),63))
                 .lineToLinearHeading(new Pose2d(20,-5,Math.toRadians(-25)))
                 .build();
 
         Trajectory rotate1L = robot.trajectoryBuilder(capLeft.end())
                 .lineToLinearHeading(new Pose2d(30,0, Math.toRadians(-15)))
                 .build();
-        Trajectory goToBoard1L = robot.trajectoryBuilder(rotate1L.end())
-                .lineToConstantHeading(new Vector2d(56,0))
+        Trajectory goToBoard1L = robot.trajectoryBuilder(new Pose2d(moveToCones.end().getX(),moveToCones.end().getY(),63))
+                .lineToConstantHeading(new Vector2d(50,0))
                 .build();
-        Trajectory rotate2L = robot.trajectoryBuilder(goToBoard1L.end())
-                .lineToLinearHeading(new Pose2d(54,0, Math.toRadians(-100)))
-                .build();
-        Trajectory goToBoard2L = robot.trajectoryBuilder(rotate2L.end())
-                .lineToConstantHeading(new Vector2d(54,-60))
+//        Trajectory rotate2L = robot.trajectoryBuilder(goToBoard1L.end())
+//                .lineToLinearHeading(new Pose2d(50,0, Math.toRadians(-100)))
+//                .build();
+        Trajectory goToBoard2L = robot.trajectoryBuilder(new Pose2d(goToBoard1L.end().getX(),goToBoard1L.end().getY(),-90))
+                .lineToConstantHeading(new Vector2d(50,-60))
                 .build();
         Trajectory alignWithBoard1 = robot.trajectoryBuilder(goToBoard2L.end())
-                .lineToConstantHeading(new Vector2d(-10,-95))
+                .lineToConstantHeading(new Vector2d(-15,-75))
                 .build();
 
         Trajectory rotate2 = robot.trajectoryBuilder(capMiddle.end())
                 .lineToLinearHeading(new Pose2d(30,0, Math.toRadians(-100)))
                 .build();
-        Trajectory alignWithBoard2 = robot.trajectoryBuilder(rotate2.end())
+        Trajectory alignWithBoard2 = robot.trajectoryBuilder(capMiddle.end())
                 .lineToConstantHeading(new Vector2d(56,-35))
                 .build();
         Trajectory goToBoard2 = robot.trajectoryBuilder(alignWithBoard2.end())
@@ -112,13 +112,9 @@ public class AutoCSRedLeft extends LinearOpMode {
         }*/
 
         if (!objFound) {
-            robot.setIsRotatedStartDeg(0);
-            robot.followTrajectoryAsync(checkLeft);
-            while (!robot.isRotated(30)) {
-                robot.update();
-            }
-            robot.breakFollowing();
-            robot.manualMotorPower(0, 0, 0, 0);
+            robot.turnDegrees(42);
+            telemetry.addData("dist",robot.getDist());
+            telemetry.update();
             //if (robot.isDistClose(10)) {
                 objFound = true;
                 objPos = 1;
@@ -150,34 +146,10 @@ public class AutoCSRedLeft extends LinearOpMode {
 
         //go forward to clear pole
         if (objPos == 1) {
-            robot.followTrajectoryAsync(rotate1L);
-            robot.setIsRotatedStartDeg(robot.getYaw());
-            while (!robot.isRotated(12)) {
-                robot.update();
-                telemetry.addData("yaw", robot.getYaw());
-                telemetry.update();
-            }
-            int count = 1;
-            robot.breakFollowing();
+            robot.turnDegrees(0);
             robot.followTrajectory(goToBoard1L);
-            robot.followTrajectoryAsync(rotate2L);
             robot.setIsRotatedStartDeg(robot.getYaw());
-            while (!robot.isRotated(-85)) {
-                robot.update();
-                telemetry.addData("yaw", robot.getYaw());
-                telemetry.update();
-                if (!robot.isRotated(-82) && count < 2) {
-                    robot.breakFollowing();
-                    DriveConstants.setkV(0.005);
-                    robot = new Robot(hardwareMap);
-                    robot.manualMotorPower(0,0,0,0);
-                    sleep(1000);
-                    robot.followTrajectoryAsync(rotate2L);
-                    count++;
-                }
-            }
-            robot.breakFollowing();
-
+            robot.turnDegrees(-90);
             robot.followTrajectory(goToBoard2L);
             robot.setArmPos(1);
             robot.setPivot(0.24);
@@ -187,15 +159,12 @@ public class AutoCSRedLeft extends LinearOpMode {
             robot.setPivot(0.6);
             robot.setArmPos(0);
             sleep(100);
-            //robot.followTrajectory(park1);
             robot.manualMotorPower(0.4,-1.0,-1.0,0.4);
             sleep(2500);
             robot.manualMotorPower(1.0,-1.0,-1.0,1.0);
             sleep(1000);
             robot.manualMotorPower(0,0,0,0);
             robot.setArmPos(-1);
-//            sleep(200);
-//            robot.manualMotorPower(0,0,0,0);
         }
 
         if (objPos == 2) {
