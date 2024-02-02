@@ -15,7 +15,7 @@ public class turnTest extends LinearOpMode {
         waitForStart();
         if (isStopRequested()) return;
 
-        robot.turnDegrees(-60,robot.getYaw());
+        robot.turnDegrees(-60);
         sleep(10000);
     }
 }
