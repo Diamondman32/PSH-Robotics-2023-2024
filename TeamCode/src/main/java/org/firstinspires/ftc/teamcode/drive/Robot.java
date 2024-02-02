@@ -455,24 +455,18 @@ public class Robot extends MecanumDrive {
         }
     }*/
     public void turnDegrees(double targetDegrees) {
-        double frontLeftPower = 1;
-        double frontRightPower = 1;
-        double backLeftPower = 1;
-        double backRightPower = 1;
+        double leftPower;
+        double rightPower;
         while (1==1) {
-            if (getYaw()>targetDegrees) { //turning right //((2*Math.abs(Math.atan(0.5*(Math.abs(currentDegrees)-Math.abs(targetDegrees)))/pi
-                frontLeftPower = (2*Math.abs(Math.atan(.2*(Math.abs(getYaw())-Math.abs(targetDegrees)))))/pi;
-                backLeftPower = (2*Math.abs(Math.atan(0.2*(Math.abs(getYaw())-Math.abs(targetDegrees)))))/pi;
-                frontRightPower =-(2*Math.abs(Math.atan(0.2*(Math.abs(getYaw())-Math.abs(targetDegrees)))))/pi;
-                backRightPower = -(2*Math.abs(Math.atan(0.2*(Math.abs(getYaw())-Math.abs(targetDegrees)))))/pi;
+            if (getYaw()>targetDegrees) { //turning right
+                leftPower = (2*Math.abs(Math.atan(.2*(Math.abs(getYaw())-Math.abs(targetDegrees)))))/pi;
+                rightPower =-(2*Math.abs(Math.atan(0.2*(Math.abs(getYaw())-Math.abs(targetDegrees)))))/pi;
             }
             else {//turning left
-                frontLeftPower = -(2*Math.abs(Math.atan(0.2*(Math.abs(getYaw())-Math.abs(targetDegrees)))))/pi;
-                backLeftPower = -(2*Math.abs(Math.atan(0.2*(Math.abs(getYaw())-Math.abs(targetDegrees)))))/pi;
-                frontRightPower = (2*Math.abs(Math.atan(0.2*(Math.abs(getYaw())-Math.abs(targetDegrees)))))/pi;
-                backRightPower = (2*Math.abs(Math.atan(0.2*(Math.abs(getYaw())-Math.abs(targetDegrees)))))/pi;
-            }//((2 / pi) * Math.abs(Math.atan(.5 * ((Math.abs(currentDegrees) - Math.abs(targetDegrees))))))
-            manualMotorPower(frontLeftPower,frontRightPower,backLeftPower,backRightPower);
+                leftPower = -(2*Math.abs(Math.atan(0.2*(Math.abs(getYaw())-Math.abs(targetDegrees)))))/pi;
+                rightPower = (2*Math.abs(Math.atan(0.2*(Math.abs(getYaw())-Math.abs(targetDegrees)))))/pi;
+            }
+            manualMotorPower(leftPower,rightPower,leftPower,rightPower);
             if (Math.abs(Math.abs(getYaw()) - Math.abs(targetDegrees)) < 20) {
                 manualMotorPower(0,0,0,0);
                 return;
