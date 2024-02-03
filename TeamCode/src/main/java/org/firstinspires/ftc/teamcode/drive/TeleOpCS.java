@@ -317,7 +317,7 @@ public class TeleOpCS extends OpMode {
 //        telemetry.addData("Mult1", liftMultiplier1);
 //        telemetry.addData("Mult2", liftMultiplier2);
 //        telemetry.addData("Encoder Diff", Math.abs(liftMotor1.getCurrentPosition()-liftMotor2.getCurrentPosition()));
-//        telemetry.addData("dist", distanceSensor.getDistance(DistanceUnit.INCH));
+        telemetry.addData("dist", distanceSensor.getDistance(DistanceUnit.INCH));
 //        telemetry.addData("Arm target", armValue);
 //        telemetry.addData("difference (5)",pixArm.getCurrentPosition()-armValue);
 //        telemetry.addData("Arm Encoder", pixArm.getCurrentPosition());

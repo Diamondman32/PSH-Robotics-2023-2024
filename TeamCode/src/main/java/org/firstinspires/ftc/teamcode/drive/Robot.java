@@ -467,7 +467,7 @@ public class Robot extends MecanumDrive {
                 rightPower = (Math.abs(Math.atan(0.5*(getYaw()-targetDegrees))))/pi;
             }
             manualMotorPower(leftPower,rightPower,leftPower,rightPower);
-            if (Math.abs(Math.abs(getYaw()) - Math.abs(targetDegrees)) < 4) {
+            if (Math.abs(getYaw()-targetDegrees) < 6) {
                 manualMotorPower(0,0,0,0);
                 return;
             }
