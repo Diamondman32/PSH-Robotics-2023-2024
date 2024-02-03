@@ -14,8 +14,8 @@ import java.util.ArrayList;
 @Autonomous(name = "AutoCSRedLeft")
 public class AutoCSRedLeft extends LinearOpMode {
     private final ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-    public static int x = -5;
-    public static int y = -75;
+    public static int x = -85;
+    public static int y = -55;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -30,7 +30,7 @@ public class AutoCSRedLeft extends LinearOpMode {
                 .forward(1)
                 .build();
         Trajectory moveToCones = robot.trajectoryBuilder(error.end())
-                .lineToConstantHeading(new Vector2d(21,0))
+                .lineToConstantHeading(new Vector2d(22,0))
                 .build();
         Trajectory capMiddle = robot.trajectoryBuilder(moveToCones.end())
                 .lineToConstantHeading(new Vector2d(31,0))
@@ -39,7 +39,10 @@ public class AutoCSRedLeft extends LinearOpMode {
                 .forward(1)
                 .build();
         Trajectory capRight = robot.trajectoryBuilder(new Pose2d(moveToCones.end().getX(),moveToCones.end().getY(),63))
-                .lineToLinearHeading(new Pose2d(20,-5,Math.toRadians(-25)))
+                .lineToLinearHeading(new Pose2d(20,-5,Math.toRadians(-50)))
+                .build();
+        Trajectory unCapRight = robot.trajectoryBuilder(new Pose2d(capRight.end().getX(),capRight.end().getY(),-45))
+                .lineToLinearHeading(new Pose2d(22,0,Math.toRadians(0)))
                 .build();
 
 
@@ -57,32 +60,33 @@ public class AutoCSRedLeft extends LinearOpMode {
                 .build();
 
         Trajectory goToBoard1M = robot.trajectoryBuilder(new Pose2d(capMiddle.end().getX(),capMiddle.end().getY(),45))
-                .forward(15)
+                .forward(20)
                 .build();
-        Trajectory goToBoard2M = robot.trajectoryBuilder(new Pose2d(goToBoard1M.end().getX(),goToBoard1M.end().getY(),-45))
-                .lineToConstantHeading(new Vector2d(52,0))
+        Trajectory goToBoard2M = robot.trajectoryBuilder(new Pose2d(goToBoard1M.end().getX(),goToBoard1M.end().getY(),0))
+                .forward(17)
                 .build();
-        Trajectory goToBoard3M = robot.trajectoryBuilder(new Pose2d(goToBoard2M.end().getX(),goToBoard2M.end().getY(),-90))
-                .lineToConstantHeading(new Vector2d(52,-60))
+        Trajectory goToBoard3M = robot.trajectoryBuilder(new Pose2d(52,0,-90))
+                .lineToConstantHeading(new Vector2d(52,-80))
                 .build();
-        Trajectory alignWithBoard2 = robot.trajectoryBuilder(goToBoard2L.end())
-                .lineToConstantHeading(new Vector2d(-25,-75))
+        Trajectory alignWithBoard2 = robot.trajectoryBuilder(new Pose2d(52,-80,-179))
+                .forward(25)
                 .build();
-        Trajectory arriveAtBoard2 = robot.trajectoryBuilder(alignWithBoard1.end())
-                .forward(15)
+        Trajectory arriveAtBoard2 = robot.trajectoryBuilder(alignWithBoard2.end())
+                .forward(28)
                 .build();
 
-        Trajectory rotate3 = robot.trajectoryBuilder(capRight.end())
-                .lineToLinearHeading(new Pose2d(30,0, Math.toRadians(-100)))
+        Trajectory goToBoard1R = robot.trajectoryBuilder(new Pose2d(moveToCones.end().getX(),moveToCones.end().getY(),63))
+                .lineToConstantHeading(new Vector2d(54,0))
                 .build();
-        Trajectory goToBoard3 = robot.trajectoryBuilder(rotate3.end())
-                .lineToConstantHeading(new Vector2d(50,-35))
+        Trajectory goToBoard2R = robot.trajectoryBuilder(new Pose2d(goToBoard1R.end().getX(),goToBoard1R.end().getY(),-90))
+                .lineToConstantHeading(new Vector2d(54,-70))
                 .build();
-//        Trajectory park3 = robot.trajectoryBuilder(moveToBoard3.end())
-//                .lineTo(new Vector2d(0,-30))
-//                .build();
-
-
+        Trajectory alignWithBoard3 = robot.trajectoryBuilder(new Pose2d(goToBoard2R.end().getX(),goToBoard2R.end().getY(),-179))
+                .forward(29)
+                .build();
+        Trajectory arriveAtBoard3 = robot.trajectoryBuilder(alignWithBoard3.end())
+                .forward(20)
+                .build();
 
         waitForStart();
         if (isStopRequested()) return;
@@ -126,7 +130,6 @@ public class AutoCSRedLeft extends LinearOpMode {
             robot.setPivot(0.6);//raise pixarm
             sleep(50);
             robot.setLeftGrabber(0.37);
-            robot.turnDegrees(45);
         }
 
         if (!objFound) {
@@ -159,6 +162,8 @@ public class AutoCSRedLeft extends LinearOpMode {
             robot.setPivot(0.6);
             sleep(50);
             robot.setLeftGrabber(0.37);
+            robot.followTrajectory(unCapRight);
+            robot.turnDegrees(0);
             sleep(500);
         }
 
@@ -179,28 +184,18 @@ public class AutoCSRedLeft extends LinearOpMode {
             sleep(100);
             robot.setPivot(0.6);
             robot.setArmPos(0);
-            robot.manualMotorPower(-.2,-.2,-.2,-.2);
-            sleep(500);
-            robot.manualMotorPower(0,0,0,0);
-            /*sleep(100);
-            robot.manualMotorPower(0.4,-1.0,-1.0,0.4);
-            sleep(1000);
-            robot.manualMotorPower(1.0,-1.0,-1.0,1.0);
-            sleep(2500);
-            robot.manualMotorPower(0,0,0,0);
-            robot.setArmPos(-1);
-
-             */
         }
 
         if (objPos == 2) {
             robot.turnDegrees(45);
             robot.followTrajectory(goToBoard1M);
-            robot.turnDegrees(-45);
+            robot.turnDegrees(0);
             robot.followTrajectory(goToBoard2M);
             robot.turnDegrees(-90);
             robot.followTrajectory(goToBoard3M);
+            robot.turnDegrees(-179);
             robot.followTrajectory(alignWithBoard2);
+            robot.turnDegrees(-90);
             robot.setArmPos(1);
             robot.setPivot(0.27);
             sleep(500);
@@ -211,34 +206,22 @@ public class AutoCSRedLeft extends LinearOpMode {
             robot.setArmPos(0);
         }
         if (objPos == 3) {
-            robot.followTrajectoryAsync(rotate3);
-            robot.update();
-            double initYaw = robot.getYaw();
             robot.turnDegrees(0);
-
-
-            //robot.setIsRotatedStartDeg(robot.getYaw());
-            /*while (!robot.isRotated(-76)) {
-                robot.update();
-                telemetry.addData("initYaw", initYaw);
-                telemetry.addData("yaw", robot.getYaw());
-                telemetry.update();
-            }
-             */
-            robot.breakFollowing();
+            robot.followTrajectory(goToBoard1R);
+            robot.setIsRotatedStartDeg(robot.getYaw());
+            robot.turnDegrees(-90);
+            robot.followTrajectory(goToBoard2R);
+            robot.turnDegrees(-179);
+            robot.followTrajectory(alignWithBoard3);
+            robot.turnDegrees(-90);
             robot.setArmPos(1);
             robot.setPivot(0.24);
-            robot.followTrajectory(goToBoard3);
+            sleep(500);
+            robot.followTrajectory(arriveAtBoard3);
             robot.setRightGrabber(0.7);
             sleep(100);
             robot.setPivot(0.6);
             robot.setArmPos(0);
-            sleep(100);
-            //robot.followTrajectory(park1);
-            robot.manualMotorPower(0.9,-1.0,-1.0,0.9);
-            sleep(1700);
-            robot.manualMotorPower(0,0,0,0);
-            robot.setArmPos(-1);
         }
 
         sleep(3000);
