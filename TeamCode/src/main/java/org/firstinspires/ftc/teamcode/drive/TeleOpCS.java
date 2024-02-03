@@ -18,7 +18,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @TeleOp(group="drive")
 public class TeleOpCS extends OpMode {
-    private DcMotor frontLeft, frontRight, backLeft, backRight, liftMotor1, liftMotor2, pixArm;
+    private DcMotorEx frontLeft, frontRight, backLeft, backRight;
+    private DcMotor liftMotor1, liftMotor2, pixArm;
     private Servo leftGrabber, rightGrabber, leftGrabberPivot, rightGrabberPivot, droneLauncher;
     private DistanceSensor distanceSensor;
     private double rightGrabPos, leftGrabPos, pivotPos, dronePos, speedMultiplier; //for Grabber Arm
@@ -96,32 +97,32 @@ public class TeleOpCS extends OpMode {
         backLeft = hardwareMap.get(DcMotorEx.class, "bl"); //back-left
         backRight = hardwareMap.get(DcMotorEx.class, "br"); //back-right
 
-        frontLeft.setDirection(DcMotor.Direction.REVERSE);
-        backLeft.setDirection(DcMotor.Direction.REVERSE);
+        frontLeft.setDirection(DcMotorEx.Direction.REVERSE);
+        backLeft.setDirection(DcMotorEx.Direction.REVERSE);
 
-        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontLeft.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        frontLeft.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        backLeft.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        backLeft.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        frontRight.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        frontRight.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        backRight.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        backRight.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
 
-        liftMotor1 = hardwareMap.get(DcMotorEx.class, "lm1"); //lift-motor-1 LEFT
+        liftMotor1 = hardwareMap.get(DcMotor.class, "lm1"); //lift-motor-1 LEFT
         liftMotor1.setDirection(DcMotor.Direction.FORWARD);
         liftMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         liftMotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        liftMotor2 = hardwareMap.get(DcMotorEx.class, "lm2"); //lift-motor-2 RIGHT
+        liftMotor2 = hardwareMap.get(DcMotor.class, "lm2"); //lift-motor-2 RIGHT
         liftMotor2.setDirection(DcMotor.Direction.REVERSE);
         liftMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         liftMotor2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         speedMultiplier = 1.00;
 
-        pixArm = hardwareMap.get(DcMotorEx.class, "arm");
+        pixArm = hardwareMap.get(DcMotor.class, "arm");
         pixArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         pixArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         pixArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -311,23 +312,23 @@ public class TeleOpCS extends OpMode {
         }
         droneLauncher.setPosition(dronePos);
 
-        /*telemetry.addData("LiftPos1", liftMotor1.getCurrentPosition());
-        telemetry.addData("LiftPos2", liftMotor2.getCurrentPosition());
-        telemetry.addData("Mult1", liftMultiplier1);
-        telemetry.addData("Mult2", liftMultiplier2);
-        telemetry.addData("Encoder Diff", Math.abs(liftMotor1.getCurrentPosition()-liftMotor2.getCurrentPosition()));*/
-        telemetry.addData("dist", distanceSensor.getDistance(DistanceUnit.INCH));
-        telemetry.addData("Arm target", armValue);
-        telemetry.addData("difference (5)",pixArm.getCurrentPosition()-armValue);
-        /*telemetry.addData("Arm Encoder", pixArm.getCurrentPosition());
-        telemetry.addData("busy", pixArm.isBusy());
-        telemetry.addData("frontLeft",frontLeft.getCurrentPosition());
-        telemetry.addData("frontRight",frontRight.getCurrentPosition());
-        telemetry.addData("backLeft",backLeft.getCurrentPosition());
-        telemetry.addData("backRight",backRight.getCurrentPosition());*/
-        telemetry.addData("imu Yaw",imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
-        //telemetry.addData("pivotPos",rightGrabberPivot.getPosition());
-        //telemetry.addData("pixArm",pixArm.getCurrentPosition());
-        telemetry.update();
+//        telemetry.addData("LiftPos1", liftMotor1.getCurrentPosition());
+//        telemetry.addData("LiftPos2", liftMotor2.getCurrentPosition());
+//        telemetry.addData("Mult1", liftMultiplier1);
+//        telemetry.addData("Mult2", liftMultiplier2);
+//        telemetry.addData("Encoder Diff", Math.abs(liftMotor1.getCurrentPosition()-liftMotor2.getCurrentPosition()));
+//        telemetry.addData("dist", distanceSensor.getDistance(DistanceUnit.INCH));
+//        telemetry.addData("Arm target", armValue);
+//        telemetry.addData("difference (5)",pixArm.getCurrentPosition()-armValue);
+//        telemetry.addData("Arm Encoder", pixArm.getCurrentPosition());
+//        telemetry.addData("busy", pixArm.isBusy());
+//        telemetry.addData("frontLeft",frontLeft.getCurrentPosition());
+//        telemetry.addData("frontRight",frontRight.getCurrentPosition());
+//        telemetry.addData("backLeft",backLeft.getCurrentPosition());
+//        telemetry.addData("backRight",backRight.getCurrentPosition());
+//        telemetry.addData("imu Yaw",imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
+//        telemetry.addData("pivotPos",rightGrabberPivot.getPosition());
+//        telemetry.addData("pixArm",pixArm.getCurrentPosition());
+//        telemetry.update();
     }
 }
