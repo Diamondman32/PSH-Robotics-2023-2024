@@ -227,12 +227,6 @@ public class TeleOpCS extends OpMode {
             speedTimer.reset();
         }
 
-        if (gamepad1.dpad_down) {
-            armToHeightEncoders(-10);
-        } else if (gamepad1.dpad_up) {
-            armToHeightEncoders(10);
-        }
-
         // Lift
         //If there is a difference in motor positions, set the power multiplier of the faster motor to
         // the divided motor positions ALSO LIFT MOTOR 2 SPINS OPPOSITE WAY SO IT NEEDS TO BE NEGATIVE
