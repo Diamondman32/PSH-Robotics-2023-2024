@@ -76,6 +76,51 @@ public class TeleOpCS extends OpMode {
 
         pixArm.setPower(power);
     }
+    private void armToHeightEncoders(int level) {
+        if (level == 0) {
+            armValue = 0;
+        } else if (level == 1) {
+            armValue = 75;
+        } else if (level == 2) {
+            armValue = 161;
+        } else if (level > -1) {
+            armValue += 1;
+        } else {
+            armValue -= 1;
+        }
+        pixArm.setTargetPosition(armValue);
+
+        pixArm.setPower(0.7);
+    }
+    public double getYaw() {
+        return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+    }
+    public void turnDegrees(double targetDegrees,
+                            DcMotorEx leftFront, DcMotorEx leftRear, DcMotorEx rightFront, DcMotorEx rightRear) {
+        double leftPower;
+        double rightPower;
+        while (1==1) {
+            if (getYaw()>targetDegrees) { //turning right
+                leftPower = (Math.abs(Math.atan(0.5*(getYaw()-targetDegrees))))/Math.PI;
+                rightPower = -(Math.abs(Math.atan(0.5*(getYaw()-targetDegrees))))/Math.PI;
+            }
+            else {//turning left
+                leftPower = -(Math.abs(Math.atan(0.5*(getYaw()-targetDegrees))))/Math.PI;
+                rightPower = (Math.abs(Math.atan(0.5*(getYaw()-targetDegrees))))/Math.PI;
+            }
+            leftFront.setPower(leftPower);
+            leftRear.setPower(leftPower);
+            rightFront.setPower(rightPower);
+            rightRear.setPower(rightPower);
+            if (Math.abs(getYaw()-targetDegrees) < 6) {
+                leftFront.setPower(0);
+                leftRear.setPower(0);
+                rightFront.setPower(0);
+                rightRear.setPower(0);
+                return;
+            }
+        }
+    }
 
     public void init() {
         imu = hardwareMap.get(IMU.class, "imu");
@@ -172,7 +217,7 @@ public class TeleOpCS extends OpMode {
 
         if (speedToggle && gamepad1.y && speedTimer.milliseconds()>500){
             //slow
-            speedMultiplier = 0.35;
+            speedMultiplier = 0.5;
             speedToggle = false;
             speedTimer.reset();
         } else if (!speedToggle && gamepad1.y && speedTimer.milliseconds()>500) {
@@ -182,6 +227,11 @@ public class TeleOpCS extends OpMode {
             speedTimer.reset();
         }
 
+        if (gamepad1.dpad_down) {
+            armToHeightEncoders(-10);
+        } else if (gamepad1.dpad_up) {
+            armToHeightEncoders(10);
+        }
 
         // Lift
         //If there is a difference in motor positions, set the power multiplier of the faster motor to
@@ -326,7 +376,7 @@ public class TeleOpCS extends OpMode {
 //        telemetry.addData("frontRight",frontRight.getCurrentPosition());
 //        telemetry.addData("backLeft",backLeft.getCurrentPosition());
 //        telemetry.addData("backRight",backRight.getCurrentPosition());
-//        telemetry.addData("imu Yaw",imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
+        telemetry.addData("imu Yaw",imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
 //        telemetry.addData("pivotPos",rightGrabberPivot.getPosition());
 //        telemetry.addData("pixArm",pixArm.getCurrentPosition());
 //        telemetry.update();

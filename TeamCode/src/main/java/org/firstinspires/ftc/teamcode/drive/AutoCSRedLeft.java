@@ -35,8 +35,11 @@ public class AutoCSRedLeft extends LinearOpMode {
         Trajectory capMiddle = robot.trajectoryBuilder(moveToCones.end())
                 .lineToConstantHeading(new Vector2d(31,0))
                 .build();
-        Trajectory capLeft = robot.trajectoryBuilder(new Pose2d(moveToCones.end().getX(),moveToCones.end().getY(),63))
-                .forward(1)
+        Trajectory backUp = robot.trajectoryBuilder(new Pose2d(moveToCones.end().getX(),moveToCones.end().getY(),-63))
+                .forward(-5)
+                .build();
+        Trajectory capLeft = robot.trajectoryBuilder(backUp.end())
+                .forward(6)
                 .build();
         Trajectory capRight = robot.trajectoryBuilder(new Pose2d(moveToCones.end().getX(),moveToCones.end().getY(),63))
                 .lineToLinearHeading(new Pose2d(20,-5,Math.toRadians(-50)))
@@ -137,6 +140,7 @@ public class AutoCSRedLeft extends LinearOpMode {
             telemetry.addData("dist",robot.getDist());
             telemetry.update();
             if (robot.isDistClose(10)) {
+                robot.followTrajectory(backUp);
                 objFound = true;
                 objPos = 1;
                 robot.setPivot(0.1);
