@@ -29,6 +29,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
@@ -36,6 +37,10 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
 import org.firstinspires.ftc.teamcode.util.LynxModuleUtil;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+import org.firstinspires.ftc.vision.tfod.TfodProcessor;
+import org.tensorflow.lite.TensorFlowLite;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -176,6 +181,27 @@ public class Robot extends MecanumDrive {
         //Initializing Distance Sensor
         distanceSensor = hardwareMap.get(DistanceSensor.class, "distance");
 
+        //Image Processing
+            // QR Code Processor
+        AprilTagProcessor QRProcessor = AprilTagProcessor.easyCreateWithDefaults();
+
+            // TensorFlow Processor
+        TfodProcessor objectProcessor = new TfodProcessor.Builder()
+                .setMaxNumRecognitions(1)
+                .setUseObjectTracker(true)
+                .build();
+
+        //Webcam
+        VisionPortal webcam = new VisionPortal.Builder()
+            .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+            .addProcessor(QRProcessor)
+            .addProcessor(objectProcessor)
+            .enableLiveView(true)
+            .setAutoStopLiveView(false)
+            .build();
+
+
+        //Roadrunner Stuff
         List<Integer> lastTrackingEncPositions = new ArrayList<>();
         List<Integer> lastTrackingEncVels = new ArrayList<>();
 

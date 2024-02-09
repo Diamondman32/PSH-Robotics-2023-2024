@@ -285,8 +285,7 @@ public class TeleOpCS extends OpMode {
             armToggle1 = true;
             armToggle2 = false;
             armTimer.reset();
-        }
-        else if ((!armToggle1 || !armToggle2) && (gamepad2.x || gamepad2.y) && armTimer.milliseconds()>500) {
+        } else if ((!armToggle1 || !armToggle2) && (gamepad2.x || gamepad2.y) && armTimer.milliseconds()>500) {
             //down
             armToHeightEncoders(0,0.5);
             pivotPos = 0.6;
