@@ -32,6 +32,7 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
@@ -102,6 +103,9 @@ public class Robot extends MecanumDrive {
     private final DcMotor liftMotor2;
     private final DcMotor pixArm;
     private final DistanceSensor distanceSensor;
+    private final VisionPortal webcam;
+    private final TfodProcessor objectProcessor;
+    private final AprilTagProcessor QRProcessor;
 
     public Robot(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
@@ -136,7 +140,7 @@ public class Robot extends MecanumDrive {
         }
 
         if (RUN_USING_ENCODER) {
-            //setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
 
         setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -183,16 +187,16 @@ public class Robot extends MecanumDrive {
 
         //Image Processing
             // QR Code Processor
-        AprilTagProcessor QRProcessor = AprilTagProcessor.easyCreateWithDefaults();
+        QRProcessor = AprilTagProcessor.easyCreateWithDefaults();
 
             // TensorFlow Processor
-        TfodProcessor objectProcessor = new TfodProcessor.Builder()
+        objectProcessor = new TfodProcessor.Builder()
                 .setMaxNumRecognitions(1)
                 .setUseObjectTracker(true)
                 .build();
 
         //Webcam
-        VisionPortal webcam = new VisionPortal.Builder()
+        webcam = new VisionPortal.Builder()
             .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
             .addProcessor(QRProcessor)
             .addProcessor(objectProcessor)
@@ -529,5 +533,8 @@ public class Robot extends MecanumDrive {
         leftRear.setPower(backLeft);
         rightFront.setPower(frontRight);
         rightRear.setPower(backRight);
+    }
+    public void getWebcam() {
+        List<Recognition> currentRecognitions = objectProcessor.getRecognitions();
     }
 }
