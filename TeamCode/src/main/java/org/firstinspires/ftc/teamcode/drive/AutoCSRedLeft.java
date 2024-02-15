@@ -8,14 +8,14 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+
 import java.util.ArrayList;
 
 @Config
 @Autonomous(name = "AutoCSRedLeft")
 public class AutoCSRedLeft extends LinearOpMode {
     private final ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-    public static int x = -85;
-    public static int y = -55;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -25,6 +25,12 @@ public class AutoCSRedLeft extends LinearOpMode {
         int objPos = 0;
 
         robot.resetYaw();
+
+        TrajectorySequence untitled0 = robot.trajectorySequenceBuilder(new Pose2d(63.09, 11.56, Math.toRadians(90.00)))
+                .lineToLinearHeading(new Pose2d(38.28, 20.68, Math.toRadians(165.78)))
+                .splineTo(new Vector2d(44.64, 31.28), Math.toRadians(59.04))
+                .build();
+
 
         //Dodging Pose Errors
         Trajectory error = robot.trajectoryBuilder(new Pose2d())
@@ -47,7 +53,7 @@ public class AutoCSRedLeft extends LinearOpMode {
                 .lineToConstantHeading(new Vector2d(52,0))
                 .build();
         Trajectory goToBoard1FromMiddle = robot.trajectoryBuilder(capMiddle.end())
-                .lineToConstantHeading(new Vector2d(52,0))
+                .splineToConstantHeading(new Vector2d(52,0),Math.toRadians(90))
                 .build();
         Trajectory goToBoard1FromRight = robot.trajectoryBuilder(capRight.end())
                 .lineToConstantHeading(new Vector2d(52,0))
