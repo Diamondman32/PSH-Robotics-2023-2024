@@ -555,31 +555,31 @@ public class Robot extends MecanumDrive {
 
         final int DESIRED_TAG_ID = pos;
 
-        boolean targetFound = false;
-        double x, y, yaw = 0;
-        AprilTagDetection desiredTag = null;
+        while (true) {
+            boolean targetFound = false;
+            double x, y, yaw = 0;
+            AprilTagDetection desiredTag = null;
 
-        List<AprilTagDetection> currentDetections = QRProcessor.getDetections();
-        for (AprilTagDetection detection : currentDetections) {
-            // Look to see if we have size info on this tag.
-            if (detection.metadata != null) {
-                //  Check to see if we want to track towards this tag.
-                if ((DESIRED_TAG_ID < 0) || (detection.id == DESIRED_TAG_ID)) {
-                    // Yes, we want to use this tag.
-                    targetFound = true;
-                    desiredTag = detection;
-                    break;  // don't look any further.
+            List<AprilTagDetection> currentDetections = QRProcessor.getDetections();
+            for (AprilTagDetection detection : currentDetections) {
+                // Look to see if we have size info on this tag.
+                if (detection.metadata != null) {
+                    //  Check to see if we want to track towards this tag.
+                    if ((DESIRED_TAG_ID < 0) || (detection.id == DESIRED_TAG_ID)) {
+                        // Yes, we want to use this tag.
+                        targetFound = true;
+                        desiredTag = detection;
+                        break;  // don't look any further.
+                    } else {
+                        // This tag is in the library, but we do not want to track it right now.
+                        telemetry.addData("Skipping", "Tag ID %d is not desired", detection.id);
+                    }
                 } else {
-                    // This tag is in the library, but we do not want to track it right now.
-                    telemetry.addData("Skipping", "Tag ID %d is not desired", detection.id);
+                    // This tag is NOT in the library, so we don't have enough information to track to it.
+                    telemetry.addData("Unknown", "Tag ID %d is not in TagLibrary", detection.id);
                 }
-            } else {
-                // This tag is NOT in the library, so we don't have enough information to track to it.
-                telemetry.addData("Unknown", "Tag ID %d is not in TagLibrary", detection.id);
             }
-        }
 
-        while (desiredTag.ftcPose.range<12) {
             // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
             double rangeError = (desiredTag.ftcPose.range - DESIRED_DISTANCE);
             double headingError = desiredTag.ftcPose.bearing;
@@ -609,6 +609,12 @@ public class Robot extends MecanumDrive {
 
             // Send powers to the wheels.
             manualMotorPower(leftFrontPower, rightFrontPower, leftBackPower, rightBackPower);
+
+            // Exit condition
+            if (desiredTag.ftcPose.range < DESIRED_DISTANCE) {
+                break;
+            }
         }
+        manualMotorPower(0,0,0,0);
     }
 }
