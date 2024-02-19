@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 @Autonomous(name = "AutoCSBlueLeft")
 @Config
@@ -16,269 +17,130 @@ public class AutoCSBlueLeft extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         Robot robot = new Robot(hardwareMap);
 
-        boolean objFound = false;
-        int objPos = 0;
-
         robot.resetYaw();
 
+        //TrajSeq
+        Pose2d startPose = new Pose2d(-62.00, 12.00, Math.toRadians(0.00));
+        TrajectorySequence left = robot.trajectorySequenceBuilder(startPose)
+                .lineToLinearHeading(new Pose2d(-39.00, 23.00, Math.toRadians(0.00)))
+                .lineToLinearHeading(new Pose2d(-42.00, 51.00, Math.toRadians(90.00)))
+                .build();
+        TrajectorySequence middle = robot.trajectorySequenceBuilder(startPose)
+                .lineToLinearHeading(new Pose2d(-35.00, 12.00, Math.toRadians(0.00)))
+                .lineToLinearHeading(new Pose2d(-36.00, 51.00, Math.toRadians(90.00)))
+                .build();
+        TrajectorySequence right = robot.trajectorySequenceBuilder(startPose)
+                .lineToLinearHeading(new Pose2d(-30.00, 12.00, Math.toRadians(269.99)))
+                .lineToLinearHeading(new Pose2d(-29.00, 51.00, Math.toRadians(90.00)))
+                .build();
+
+
+        //Dodging Pose Errors
         Trajectory error = robot.trajectoryBuilder(new Pose2d())
                 .forward(1)
                 .build();
-        Trajectory moveToCones = robot.trajectoryBuilder(error.end())
-                .lineToConstantHeading(new Vector2d(21,0))
+
+        //Based on team prop position only one of these 3 will run
+        Trajectory capMiddle = robot.trajectoryBuilder(error.end())
+                .lineToConstantHeading(new Vector2d(31,0))
                 .build();
-        Trajectory capMiddle = robot.trajectoryBuilder(moveToCones.end())
-                .lineToConstantHeading(new Vector2d(31,0))//28
+        Trajectory capLeft = robot.trajectoryBuilder(error.end())
+                .lineToLinearHeading(new Pose2d(20,5,Math.toRadians(35)))
                 .build();
-        Trajectory checkLeft = robot.trajectoryBuilder(moveToCones.end())
-                .lineToLinearHeading(new Pose2d(18,-2,Math.toRadians(40)))//-28
-                .build();
-        Trajectory capRight = robot.trajectoryBuilder(checkLeft.end())
-                .lineToLinearHeading(new Pose2d(20,-5,Math.toRadians(-25)))//32
-                .build();
-        Trajectory capLeft = robot.trajectoryBuilder(checkLeft.end())
-                .forward(10)
+        Trajectory capRight = robot.trajectoryBuilder(error.end())
+                .lineToLinearHeading(new Pose2d(20,-5,Math.toRadians(-35)))
                 .build();
 
-        Trajectory rotate1 = robot.trajectoryBuilder(capLeft.end())
-                .lineToLinearHeading(new Pose2d(30,0, Math.toRadians(100)))
+        //Face the board and scoot away from pixel
+        Trajectory goToBoard1FromLeft = robot.trajectoryBuilder(capLeft.end())
+                .lineToLinearHeading(new Pose2d(18,0,Math.toRadians(-90)))
                 .build();
-        Trajectory alignWithBoard1 = robot.trajectoryBuilder(rotate1.end())
-                .lineToConstantHeading(new Vector2d(65,35))//90
+        Trajectory goToBoard1FromMiddle = robot.trajectoryBuilder(capMiddle.end())
+                .lineToLinearHeading(new Pose2d(18,0,Math.toRadians(-90)))
                 .build();
-        Trajectory goToBoard1 = robot.trajectoryBuilder(alignWithBoard1.end())
-                .forward(30)
-                .build();
-
-        Trajectory rotate2 = robot.trajectoryBuilder(capMiddle.end())
-                .lineToLinearHeading(new Pose2d(30,0, Math.toRadians(100)))
-                .build();
-        Trajectory alignWithBoard2 = robot.trajectoryBuilder(rotate2.end())
-                .lineToConstantHeading(new Vector2d(56,35))
-                .build();
-        Trajectory goToBoard2 = robot.trajectoryBuilder(alignWithBoard2.end())
-                .forward(28)
+        Trajectory goToBoard1FromRight = robot.trajectoryBuilder(capRight.end())
+                .lineToLinearHeading(new Pose2d(18,0,Math.toRadians(-90)))
                 .build();
 
-        Trajectory rotate3 = robot.trajectoryBuilder(capRight.end())
-                .lineToLinearHeading(new Pose2d(30,0, Math.toRadians(100)))
+        //Based on location of team prop, move to 1 of the 3 correct QR codes
+        // (NOTE: MIGHT NOT USE ROADRUNNER FOR THIS)
+        Trajectory goToLeftBoard = robot.trajectoryBuilder(goToBoard1FromLeft.end())
+                .lineToLinearHeading(new Pose2d(-3,-75,Math.toRadians(-90)))//strafe
                 .build();
-        Trajectory goToBoard3 = robot.trajectoryBuilder(rotate3.end())
-                .lineToConstantHeading(new Vector2d(50,35))
+        Trajectory goToMiddleBoard = robot.trajectoryBuilder(goToBoard1FromMiddle.end())
+                .lineToLinearHeading(new Pose2d(-4,-75,Math.toRadians(-90)))//strafe
                 .build();
-//        Trajectory park3 = robot.trajectoryBuilder(moveToBoard3.end())
-//                .lineTo(new Vector2d(0,-30))
-//                .build();
+        Trajectory goToRightBoard = robot.trajectoryBuilder(goToBoard1FromRight.end())
+                .lineToLinearHeading(new Pose2d(-5,-75,Math.toRadians(-90)))//strafe
+                .build();
 
+        robot.setPoseEstimate(new Pose2d());
 
         waitForStart();
         if (isStopRequested()) return;
-
-        telemetry.addData("yaw",robot.getYaw());
-        telemetry.update();
-
-        //Set Pose Estimate
-        robot.setPoseEstimate(new Pose2d());
+//----------------------------------------START OF AUTO---------------------------------------------
 
         //Tighten Grabbers
         robot.setLeftGrabber(0.37);
         robot.setRightGrabber(1.00);
 
-        //Drive to scan
-        robot.followTrajectory(moveToCones);
-        //scan forward if object cap it
-        if (robot.isDistClose(10)) {
-            telemetry.addData("dist",robot.getDist());
-            telemetry.update();
-            objFound = true;
-            objPos = 2;
-            robot.setPivot(0.1);//lower pixarm
-            sleep(500);
-            robot.followTrajectory(capMiddle);//push team prop
-            sleep(100);
-            robot.setLeftGrabber(0.61);//drop pixel
-            sleep(150);
-            robot.setPivot(0.6);//raise pixarm
-            sleep(50);
-            robot.setLeftGrabber(0.37);
-            sleep(500);
-        }
-
-        //scan left ~90 deg WHY DOESNT THIS WORK
-        /*if (!objFound) { //ASYNC FINDING
-            robot.followTrajectoryAsync(checkRight);
-            timer.reset();
-            while (timer.milliseconds() < 1000 && !objFound) {
-                robot.update();
-                telemetry.addData("dist", robot.getDist());
-                telemetry.update();
-                if (robot.isDistClose(12)) {//10
-                    robot.breakFollowing();
-                    objFound = true;
-                    objPos = 3;
-                    robot.setPivot(0.1);
+        //Based on team prop position, cap a pixel on the correct tick mark
+        switch(robot.getObjectPosition()) {//Note: getObjectPosition doesn't work
+            case 1:
+                if (robot.trajSeq) {
+                    robot.setPoseEstimate(left.start());
+                    robot.followTrajectorySequence(left);
+                } else {
+                    robot.setPivot(0.1);//lower pix-arm
                     sleep(500);
-                    robot.followTrajectory(capRight);
-                    robot.setLeftGrabber(0.61);
+                    robot.followTrajectory(capLeft);//move over tick mark
                     sleep(100);
-                    robot.setPivot(0.6);
+                    robot.setLeftGrabber(0.61);//open claw (drop pixel)
+                    sleep(150);
+                    robot.setPivot(0.6);//raise pix-arm
                     sleep(50);
-                    robot.setLeftGrabber(0.37);
-                    sleep(500);
+                    robot.setLeftGrabber(0.37);//close claw
+                    robot.followTrajectory(goToBoard1FromLeft);
+                    robot.moveToAprilTag(1);
                 }
-            }
-        }*/
-
-        /*if (!objFound) //ASYNC FINDING
-            robot.followTrajectoryAsync(checkRight);
-        timer.reset();
-        while (timer.milliseconds() < 1000 && !objFound) {
-            robot.update();
-            telemetry.addData("dist",robot.getDist());
-            telemetry.update();
-                if (robot.isDistClose(15)) {//10
-                    robot.breakFollowing();
-                    objFound = true;
-                    objPos = 3;
-                    robot.setPivot(0.1);
+                break;
+            case 2:
+                if (robot.trajSeq) {
+                    robot.setPoseEstimate(middle.start());
+                    robot.followTrajectorySequence(middle);
+                } else {
+                    robot.setPivot(0.1);//lower pix-arm
                     sleep(500);
-                    robot.followTrajectory(capRight);
-                    robot.setLeftGrabber(0.61);
+                    robot.followTrajectory(capMiddle);//move over tick mark
                     sleep(100);
-                    robot.setPivot(0.6);
+                    robot.setLeftGrabber(0.61);//open claw (drop pixel)
+                    sleep(150);
+                    robot.setPivot(0.6);//raise pix-arm
                     sleep(50);
-                    robot.setLeftGrabber(0.37);
-                    sleep(500);
+                    robot.setLeftGrabber(0.37);//close claw
+                    robot.followTrajectory(goToBoard1FromMiddle);
+                    robot.moveToAprilTag(2);
                 }
-            }*/
-
-        if (!objFound) {
-            robot.setIsRotatedStartDeg(0);
-            robot.followTrajectoryAsync(checkLeft);
-            while (!robot.isRotated(30)) {
-                robot.update();
-            }
-            robot.breakFollowing();
-            robot.manualMotorPower(0, 0, 0, 0);
-            if (robot.isDistClose(10)) {
-                objFound = true;
-                objPos = 3;
-                robot.setPivot(0.1);
-                sleep(500);
-                robot.followTrajectory(capLeft);
-                robot.setLeftGrabber(0.61);
-                sleep(100);
-                robot.setPivot(0.6);
-                sleep(50);
-                robot.setLeftGrabber(0.37);
-                sleep(500);
-            }
+                break;
+            case 3:
+                if (robot.trajSeq) {
+                    robot.setPoseEstimate(right.start());
+                    robot.followTrajectorySequence(right);
+                } else {
+                    robot.setPivot(0.1);//lower pix-arm
+                    sleep(500);
+                    robot.followTrajectory(capRight);//move over tick mark
+                    sleep(100);
+                    robot.setLeftGrabber(0.61);//open claw (drop pixel)
+                    sleep(150);
+                    robot.setPivot(0.6);//raise pix-arm
+                    sleep(50);
+                    robot.setLeftGrabber(0.37);//close claw
+                    robot.followTrajectory(goToBoard1FromRight);
+                    robot.moveToAprilTag(3);
+                }
+                break;
         }
-
-        //if object found cap left otherwise cap right
-        if (!objFound) {
-            objPos = 1;
-            robot.setPivot(0.1);
-            sleep(100);
-            robot.followTrajectory(capRight);
-            robot.setLeftGrabber(0.61);
-            sleep(100);
-            robot.setPivot(0.6);
-            sleep(50);
-            robot.setLeftGrabber(0.37);
-            sleep(500);
-        }
-
-        //go forward to clear pole
-        if (objPos == 1) {
-            robot.followTrajectoryAsync(rotate1);
-            robot.update();
-            double initYaw = robot.getYaw();
-            robot.setIsRotatedStartDeg(robot.getYaw());
-            while (!robot.isRotated(78)) {
-                robot.update();
-                telemetry.addData("initYaw", initYaw);
-                telemetry.addData("yaw", robot.getYaw());
-                telemetry.update();
-            }
-            robot.breakFollowing();
-            robot.followTrajectory(alignWithBoard1);
-            robot.setArmPos(1);
-            robot.setPivot(0.24);
-            robot.followTrajectory(goToBoard1);
-            robot.setRightGrabber(0.7);
-            sleep(100);
-            robot.setPivot(0.6);
-            robot.setArmPos(0);
-            sleep(100);
-            //robot.followTrajectory(park1);
-            robot.manualMotorPower(-1.0,0.9,0.9,-1.0);
-            sleep(3500);
-            robot.manualMotorPower(0,0,0,0);
-            robot.setArmPos(-1);
-//            sleep(200);
-//            robot.manualMotorPower(0,0,0,0);
-        }
-
-        if (objPos == 2) {
-            robot.followTrajectoryAsync(rotate2);
-            robot.update();
-            double initYaw = robot.getYaw();
-            robot.setIsRotatedStartDeg(robot.getYaw());
-            while (!robot.isRotated(72)) {//78
-                robot.update();
-                telemetry.addData("initYaw", initYaw);
-                telemetry.addData("yaw", robot.getYaw());
-                telemetry.update();
-            }
-            robot.breakFollowing();
-            robot.followTrajectory(alignWithBoard2);
-            robot.setArmPos(1);
-            robot.setPivot(0.27);
-            //while(robot.getDist() > 5)
-            //    robot.manualMotorPower(1.0,1.0,1.0,1.0);
-            //robot.manualMotorPower(0,0,0,0);
-            robot.followTrajectory(goToBoard2);
-            robot.setRightGrabber(0.7);
-            sleep(100);
-            robot.setPivot(0.6);
-            robot.setArmPos(0);
-            sleep(100);
-            //robot.followTrajectory(park1);
-            robot.manualMotorPower(-.4,-.4,-.4,-.4);
-            sleep(100);
-            robot.manualMotorPower(-1.0,0.9,0.9,-1.0);
-            sleep(2600);
-            robot.manualMotorPower(0,0,0,0);
-            robot.setArmPos(-1);
-        }
-        if (objPos == 3) {
-            robot.followTrajectoryAsync(rotate3);
-            robot.update();
-            double initYaw = robot.getYaw();
-            robot.setIsRotatedStartDeg(robot.getYaw());
-            while (!robot.isRotated(76)) {
-                robot.update();
-                telemetry.addData("initYaw", initYaw);
-                telemetry.addData("yaw", robot.getYaw());
-                telemetry.update();
-            }
-            robot.breakFollowing();
-            robot.setArmPos(1);
-            robot.setPivot(0.24);
-            robot.followTrajectory(goToBoard3);
-            robot.setRightGrabber(0.7);
-            sleep(100);
-            robot.setPivot(0.6);
-            robot.setArmPos(0);
-            sleep(100);
-            //robot.followTrajectory(park1);
-            robot.manualMotorPower(-1.0,0.9,0.9,-1.0);
-            sleep(1700);
-            robot.manualMotorPower(0,0,0,0);
-            robot.setArmPos(-1);
-        }
-
         sleep(3000);
     }
 }

@@ -108,6 +108,7 @@ public class Robot extends MecanumDrive {
     private final VisionPortal webcam;
     private final TfodProcessor objectProcessor;
     private final AprilTagProcessor QRProcessor;
+    public final boolean trajSeq = true;
 
     public Robot(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);

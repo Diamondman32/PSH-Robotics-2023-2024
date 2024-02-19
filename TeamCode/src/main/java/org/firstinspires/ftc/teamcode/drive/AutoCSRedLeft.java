@@ -15,20 +15,33 @@ import java.util.ArrayList;
 @Config
 @Autonomous(name = "AutoCSRedLeft")
 public class AutoCSRedLeft extends LinearOpMode {
-    private final ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    //private final ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
     @Override
     public void runOpMode() throws InterruptedException {
         Robot robot = new Robot(hardwareMap);
 
-        boolean objFound = false;
-        int objPos = 0;
-
         robot.resetYaw();
 
-        TrajectorySequence untitled0 = robot.trajectorySequenceBuilder(new Pose2d(63.09, 11.56, Math.toRadians(90.00)))
-                .lineToLinearHeading(new Pose2d(38.28, 20.68, Math.toRadians(165.78)))
-                .splineTo(new Vector2d(44.64, 31.28), Math.toRadians(59.04))
+        //TrajSeq
+        Pose2d startPose = new Pose2d(63.00,-35.00,Math.toRadians(180.00));
+        TrajectorySequence left = robot.trajectorySequenceBuilder(startPose)
+                .lineToLinearHeading(new Pose2d(30.00, -37.00, Math.toRadians(269.99)))
+                .lineToLinearHeading(new Pose2d(11.00, -35.00, Math.toRadians(90.00)))
+                .lineToLinearHeading(new Pose2d(11.00, 36.00, Math.toRadians(90.00)))
+                .lineToLinearHeading(new Pose2d(29.00, 51.00, Math.toRadians(90.00)))
+                .build();
+        TrajectorySequence middle = robot.trajectorySequenceBuilder(startPose)
+                .lineToLinearHeading(new Pose2d(25.00, -49.00, Math.toRadians(90.00)))
+                .lineToLinearHeading(new Pose2d(11.00, -37.00, Math.toRadians(90.00)))
+                .lineToLinearHeading(new Pose2d(11.00, 36.00, Math.toRadians(90.00)))
+                .lineToLinearHeading(new Pose2d(36.00, 51.00, Math.toRadians(90.00)))
+                .build();
+        TrajectorySequence right = robot.trajectorySequenceBuilder(startPose)
+                .lineToLinearHeading(new Pose2d(33.00, -35.00, Math.toRadians(90.00)))
+                .lineToLinearHeading(new Pose2d(11.00, -37.00, Math.toRadians(90.00)))
+                .lineToLinearHeading(new Pose2d(11.00, 36.00, Math.toRadians(90.00)))
+                .lineToLinearHeading(new Pose2d(42.00, 51.00, Math.toRadians(90.00)))
                 .build();
 
 
@@ -89,49 +102,61 @@ public class AutoCSRedLeft extends LinearOpMode {
         //Based on team prop position, cap a pixel on the correct tick mark
         switch(robot.getObjectPosition()) {//Note: getObjectPosition doesn't work
             case 1:
-                objPos = 1;
-                robot.setPivot(0.1);//lower pix-arm
-                sleep(500);
-                robot.followTrajectory(capLeft);//move over tick mark
-                sleep(100);
-                robot.setLeftGrabber(0.61);//open claw (drop pixel)
-                sleep(150);
-                robot.setPivot(0.6);//raise pix-arm
-                sleep(50);
-                robot.setLeftGrabber(0.37);//close claw
-                robot.followTrajectory(goToBoard1FromLeft);
-                robot.followTrajectory(goToBoard2);
-                robot.moveToAprilTag(4);
+                if (robot.trajSeq) {
+                    robot.setPoseEstimate(left.start());
+                    robot.followTrajectorySequence(left);
+                } else {
+                    robot.setPivot(0.1);//lower pix-arm
+                    sleep(500);
+                    robot.followTrajectory(capLeft);//move over tick mark
+                    sleep(100);
+                    robot.setLeftGrabber(0.61);//open claw (drop pixel)
+                    sleep(150);
+                    robot.setPivot(0.6);//raise pix-arm
+                    sleep(50);
+                    robot.setLeftGrabber(0.37);//close claw
+                    robot.followTrajectory(goToBoard1FromLeft);
+                    robot.followTrajectory(goToBoard2);
+                    robot.moveToAprilTag(4);
+                }
                 break;
             case 2:
-                objPos = 2;
-                robot.setPivot(0.1);//lower pix-arm
-                sleep(500);
-                robot.followTrajectory(capMiddle);//move over tick mark
-                sleep(100);
-                robot.setLeftGrabber(0.61);//open claw (drop pixel)
-                sleep(150);
-                robot.setPivot(0.6);//raise pix-arm
-                sleep(50);
-                robot.setLeftGrabber(0.37);//close claw
-                robot.followTrajectory(goToBoard1FromMiddle);
-                robot.followTrajectory(goToBoard2);
-                robot.moveToAprilTag(5);
+                if (robot.trajSeq) {
+                    robot.setPoseEstimate(middle.start());
+                    robot.followTrajectorySequence(middle);
+                } else {
+                    robot.setPivot(0.1);//lower pix-arm
+                    sleep(500);
+                    robot.followTrajectory(capMiddle);//move over tick mark
+                    sleep(100);
+                    robot.setLeftGrabber(0.61);//open claw (drop pixel)
+                    sleep(150);
+                    robot.setPivot(0.6);//raise pix-arm
+                    sleep(50);
+                    robot.setLeftGrabber(0.37);//close claw
+                    robot.followTrajectory(goToBoard1FromMiddle);
+                    robot.followTrajectory(goToBoard2);
+                    robot.moveToAprilTag(5);
+                }
                 break;
             case 3:
-                objPos = 3;
-                robot.setPivot(0.1);//lower pix-arm
-                sleep(500);
-                robot.followTrajectory(capRight);//move over tick mark
-                sleep(100);
-                robot.setLeftGrabber(0.61);//open claw (drop pixel)
-                sleep(150);
-                robot.setPivot(0.6);//raise pix-arm
-                sleep(50);
-                robot.setLeftGrabber(0.37);//close claw
-                robot.followTrajectory(goToBoard1FromRight);
-                robot.followTrajectory(goToBoard2);
-                robot.moveToAprilTag(6);
+                if (robot.trajSeq) {
+                    robot.setPoseEstimate(right.start());
+                    robot.followTrajectorySequence(right);
+                } else {
+                    robot.setPivot(0.1);//lower pix-arm
+                    sleep(500);
+                    robot.followTrajectory(capRight);//move over tick mark
+                    sleep(100);
+                    robot.setLeftGrabber(0.61);//open claw (drop pixel)
+                    sleep(150);
+                    robot.setPivot(0.6);//raise pix-arm
+                    sleep(50);
+                    robot.setLeftGrabber(0.37);//close claw
+                    robot.followTrajectory(goToBoard1FromRight);
+                    robot.followTrajectory(goToBoard2);
+                    robot.moveToAprilTag(6);
+                }
                 break;
         }
         sleep(3000);
