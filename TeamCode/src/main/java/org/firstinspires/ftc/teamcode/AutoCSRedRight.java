@@ -16,7 +16,7 @@ public class AutoCSRedRight extends LinearOpMode {
         Pose2d startPose = new Pose2d(62.00, 12.00, Math.toRadians(180.00));
 
         MecanumDrive robot = new MecanumDrive(hardwareMap, startPose);
-        ConnectedDevices util = new ConnectedDevices(hardwareMap);
+        ConnectedDevices util = new ConnectedDevices(hardwareMap, robot);
 
         Action left1 = robot.actionBuilder(robot.pose)
                 .strafeTo(new Vector2d(39.00, 23.00)) //Move to team prop
@@ -67,16 +67,16 @@ public class AutoCSRedRight extends LinearOpMode {
 
         Actions.runBlocking(
                 new SequentialAction(
-                        util.setLeftGrabber(true),
-                        util.setRightGrabber(true),
-                        util.setPivot(0.1),
+                        //util.setLeftGrabber(true),
+                        //util.setRightGrabber(true),
+                        //util.setPivot(0.1),
                         chosen1,
-                        util.setLeftGrabber(false),
-                        util.setPivot(0.24),
-                        util.setArmPos(1),
-                        util.setLeftGrabber(true),
-                        chosen2,
-                        util.setRightGrabber(false)
+                        //util.setLeftGrabber(false),
+                        //util.setPivot(0.24),
+                        //util.setArmPos(1),
+                        //util.setLeftGrabber(true),
+                        chosen2
+                        //util.setRightGrabber(false)
                 )
         );
     }

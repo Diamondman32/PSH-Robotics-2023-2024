@@ -25,12 +25,15 @@ import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.tel
 public class ConnectedDevices {
     private final Servo leftGrabber, rightGrabber, leftGrabberPivot, rightGrabberPivot;
     private final DcMotorEx pixArm;
-    private final VisionPortal webcam;
     private final TfodProcessor objectProcessor;
     private final AprilTagProcessor QRProcessor;
+    private final MecanumDrive robot;
 
-    public ConnectedDevices(HardwareMap hardwareMap) {
-        // pixArm Motor
+    public ConnectedDevices(HardwareMap hardwareMap, MecanumDrive robot) {
+        //Making robot accessible in Action Classes
+        this.robot = robot;
+
+        // pixArm
         pixArm = hardwareMap.get(DcMotorEx.class, "arm");
         pixArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         pixArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -56,7 +59,7 @@ public class ConnectedDevices {
                 .build();
 
         // Webcam
-        webcam = new VisionPortal.Builder()
+        VisionPortal webcam = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
                 .addProcessor(QRProcessor)
                 .addProcessor(objectProcessor)
@@ -146,7 +149,7 @@ public class ConnectedDevices {
 
     //------------------------------------------------------------------------------------------------------------------
     // THIS MIGHT MESS UP ROADRUNNER
-    public void moveToAprilTag(int pos, MecanumDrive robot) {
+    public void moveToAprilTag(int pos) {
         final double DESIRED_DISTANCE = 12.0; //  this is how close the camera should get to the target (inches)
         //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
         //  applied to the drive motors to correct the error.
@@ -223,7 +226,7 @@ public class ConnectedDevices {
     }
 
     //------------------------------------------------------------------------------------------------------------------
-    public double getYaw(MecanumDrive robot) {
+    public double getYaw() {
         return robot.lazyImu.get().getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
     }
 
@@ -244,5 +247,17 @@ public class ConnectedDevices {
             total += x;
         }
         return (int) Range.clip(Math.round(total / numList.size()),1,3);
+    }
+
+    //----------------------------------------------------------------------------------------------
+    private class UpdatePoseEstimate implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            robot.updatePoseEstimate();
+            return false;
+        }
+    }
+    public Action updatePoseEstimate() {
+        return new UpdatePoseEstimate();
     }
 }

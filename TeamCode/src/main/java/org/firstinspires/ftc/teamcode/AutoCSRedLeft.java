@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import androidx.annotation.NonNull;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.*;
 import com.acmerobotics.roadrunner.ftc.Actions;
@@ -7,6 +9,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import java.lang.Math;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Config
 @Autonomous(name = "AutoCSRedLeft")
@@ -16,7 +21,7 @@ public class AutoCSRedLeft extends LinearOpMode {
         Pose2d startPose = new Pose2d(63.00,-35.00,Math.toRadians(180.00));
 
         MecanumDrive robot = new MecanumDrive(hardwareMap, startPose);
-        ConnectedDevices util = new ConnectedDevices(hardwareMap);
+        ConnectedDevices util = new ConnectedDevices(hardwareMap, robot);
 
         Action left1 = robot.actionBuilder(robot.pose)
                 .strafeToLinearHeading(new Vector2d(30.00, -37.00), Math.toRadians(269.99)) //Move to team prop
@@ -55,7 +60,7 @@ public class AutoCSRedLeft extends LinearOpMode {
         if (isStopRequested()) return;
 
         // Find team prop pos with camera and then put correct trajectory into chosen
-        switch(util.getObjectPosition()) {
+        /*switch(util.getObjectPosition()) {
             case 1:
                 chosen1 = left1;
                 chosen2 = left2;
@@ -69,20 +74,23 @@ public class AutoCSRedLeft extends LinearOpMode {
                 chosen1 = right1;
                 chosen2 = right2;
                 break;
-        }
+        }*/
+        chosen1 = right1;
+        chosen2 = right2;
 
         Actions.runBlocking(
                 new SequentialAction(
-                        util.setLeftGrabber(true),
-                        util.setRightGrabber(true),
-                        util.setPivot(0.1),
+                        //util.setLeftGrabber(true),
+                        //util.setRightGrabber(true),
+                        //util.setPivot(0.1),
                         chosen1,
-                        util.setLeftGrabber(false),
-                        util.setPivot(0.24),
-                        util.setArmPos(1),
-                        util.setLeftGrabber(true),
-                        chosen2,
-                        util.setRightGrabber(false)
+                        util.updatePoseEstimate(),
+                        //util.setLeftGrabber(false),
+                        //util.setPivot(0.24),
+                        //util.setArmPos(1),
+                        //util.setLeftGrabber(true),
+                        chosen2
+                        //util.setRightGrabber(false)
                 )
         );
     }

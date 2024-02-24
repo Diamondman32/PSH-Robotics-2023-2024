@@ -16,7 +16,7 @@ public class AutoCSBlueRight extends LinearOpMode {
         Pose2d startPose = new Pose2d(-63.00,-35.00,Math.toRadians(0.00));
 
         MecanumDrive robot = new MecanumDrive(hardwareMap, startPose);
-        ConnectedDevices util = new ConnectedDevices(hardwareMap);
+        ConnectedDevices util = new ConnectedDevices(hardwareMap, robot);
 
         Action left1 = robot.actionBuilder(robot.pose)
                 .strafeToLinearHeading(new Vector2d(-33.00, -35.00), Math.toRadians(90.00)) //Move to team prop

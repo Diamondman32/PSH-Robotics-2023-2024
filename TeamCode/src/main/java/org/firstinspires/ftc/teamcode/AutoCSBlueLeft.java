@@ -16,7 +16,7 @@ public class AutoCSBlueLeft extends LinearOpMode {
         Pose2d startPose = new Pose2d(-62.00, 12.00, Math.toRadians(0.00));
 
         MecanumDrive robot = new MecanumDrive(hardwareMap, startPose);
-        ConnectedDevices util = new ConnectedDevices(hardwareMap);
+        ConnectedDevices util = new ConnectedDevices(hardwareMap, robot);
 
         Action left1 = robot.actionBuilder(robot.pose)
                 .strafeTo(new Vector2d(-39.00, 23.00)) //Move to team prop
