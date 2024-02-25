@@ -27,6 +27,7 @@ public class ConnectedDevices {
     private final DcMotorEx pixArm;
     private final TfodProcessor objectProcessor;
     private final AprilTagProcessor QRProcessor;
+    private final VisionPortal webcam;
     private final MecanumDrive robot;
 
     public ConnectedDevices(HardwareMap hardwareMap, MecanumDrive robot) {
@@ -50,22 +51,29 @@ public class ConnectedDevices {
 
         //   Image Processing
         // QR Code Processor
-        QRProcessor = AprilTagProcessor.easyCreateWithDefaults();
+        //QRProcessor = AprilTagProcessor.easyCreateWithDefaults();
+        QRProcessor = new AprilTagProcessor.Builder()
+                .setDrawAxes(true)
+                .setDrawCubeProjection(true)
+                .build();
 
         // TensorFlow Processor
         objectProcessor = new TfodProcessor.Builder()
+                .setModelAssetName("CenterStageModel.tflite")
                 .setMaxNumRecognitions(1)
                 .setUseObjectTracker(true)
+                .setModelLabels(new String[]{"prop"})
                 .build();
 
         // Webcam
-        VisionPortal webcam = new VisionPortal.Builder()
+        webcam = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
                 .addProcessor(QRProcessor)
                 .addProcessor(objectProcessor)
                 .enableLiveView(true)
                 .setAutoStopLiveView(false)
                 .build();
+        webcam.setProcessorEnabled(QRProcessor,false);
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -148,6 +156,25 @@ public class ConnectedDevices {
     }
 
     //------------------------------------------------------------------------------------------------------------------
+    public int getObjectPosition() {
+        ArrayList<Integer> numList = new ArrayList<Integer>();
+        List<Recognition> recognitions = objectProcessor.getRecognitions();
+        for (Recognition detection : recognitions) {
+            if (detection.getConfidence() > 0.75 && detection.getLeft()<detection.getRight())
+                numList.add(1);
+            else if (detection.getConfidence() > 0.75 && detection.getLeft()>detection.getRight())
+                numList.add(2);
+            else
+                numList.add(3);
+        }
+        double total = 0;
+        for (int x : numList) {
+            total += x;
+        }
+        return (int) Range.clip(Math.round(total / numList.size()),1,3);
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
     // THIS MIGHT MESS UP ROADRUNNER
     public void moveToAprilTag(int pos) {
         final double DESIRED_DISTANCE = 12.0; //  this is how close the camera should get to the target (inches)
@@ -226,38 +253,20 @@ public class ConnectedDevices {
     }
 
     //------------------------------------------------------------------------------------------------------------------
+    public void setAprilTagEnabled(boolean enabled) {
+        webcam.setProcessorEnabled(QRProcessor, enabled);
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+
+    public void setTFODEnabled(boolean enabled) {
+        webcam.setProcessorEnabled(objectProcessor, enabled);
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
     public double getYaw() {
         return robot.lazyImu.get().getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
     }
 
     //------------------------------------------------------------------------------------------------------------------
-    public int getObjectPosition() {
-        ArrayList<Integer> numList = new ArrayList<Integer>();
-        List<Recognition> recognitions = objectProcessor.getRecognitions();
-        for (Recognition detection : recognitions) {
-            if (detection.getConfidence() > 0.75 && detection.getLeft()<detection.getRight())
-                numList.add(1);
-            else if (detection.getConfidence() > 0.75 && detection.getLeft()>detection.getRight())
-                numList.add(2);
-            else
-                numList.add(3);
-        }
-        double total = 0;
-        for (int x : numList) {
-            total += x;
-        }
-        return (int) Range.clip(Math.round(total / numList.size()),1,3);
-    }
-
-    //----------------------------------------------------------------------------------------------
-    private class UpdatePoseEstimate implements Action {
-        @Override
-        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            robot.updatePoseEstimate();
-            return false;
-        }
-    }
-    public Action updatePoseEstimate() {
-        return new UpdatePoseEstimate();
-    }
 }
