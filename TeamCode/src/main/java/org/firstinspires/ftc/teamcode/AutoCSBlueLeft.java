@@ -18,24 +18,27 @@ public class AutoCSBlueLeft extends LinearOpMode {
         MecanumDrive robot = new MecanumDrive(hardwareMap, startPose);
         ConnectedDevices util = new ConnectedDevices(hardwareMap, robot);
 
-        Action left1 = robot.actionBuilder(robot.pose)
-                .strafeTo(new Vector2d(-39.00, 23.00)) //Move to team prop
+        Pose2d left1Pose = new Pose2d(new Vector2d(-39.00, 23.00), Math.toRadians(0.00));
+        Action left1 = robot.actionBuilder(startPose)
+                .strafeTo(left1Pose.position) //Move to team prop
                 .build();
-        Action left2 = robot.actionBuilder(robot.pose)
+        Action left2 = robot.actionBuilder(left1Pose)
                 .strafeToLinearHeading(new Vector2d(-42.00, 51.00), Math.toRadians(90.00)) //Move to board
                 .build();
 
-        Action middle1 = robot.actionBuilder(robot.pose)
-                .strafeTo(new Vector2d(-35.00, 12.00)) //Move to team prop
+        Pose2d middle1Pose = new Pose2d(new Vector2d(-35.00, 12.00), Math.toRadians(0.00));
+        Action middle1 = robot.actionBuilder(startPose)
+                .strafeTo(middle1Pose.position) //Move to team prop
                 .build();
-        Action middle2 = robot.actionBuilder(robot.pose)
+        Action middle2 = robot.actionBuilder(middle1Pose)
                 .strafeToLinearHeading(new Vector2d(-36.00, 51.00), Math.toRadians(90.00)) //Move to board
                 .build();
 
-        Action right1 = robot.actionBuilder(robot.pose)
-                .strafeToLinearHeading(new Vector2d(-30.00, 12.00), Math.toRadians(269.99)) //Move to team prop
+        Pose2d right1Pose = new Pose2d(new Vector2d(-30.00, 12.00), Math.toRadians(269.99));
+        Action right1 = robot.actionBuilder(startPose)
+                .strafeToLinearHeading(right1Pose.position, right1Pose.heading) //Move to team prop
                 .build();
-        Action right2 = robot.actionBuilder(robot.pose)
+        Action right2 = robot.actionBuilder(right1Pose)
                 .strafeToLinearHeading(new Vector2d(-29.00, 51.00), Math.toRadians(90.00)) //Move to board
                 .build();
 
