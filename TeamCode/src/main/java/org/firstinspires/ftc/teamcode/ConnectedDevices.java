@@ -20,8 +20,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
-
 public class ConnectedDevices {
     private final Servo leftGrabber, rightGrabber, leftGrabberPivot, rightGrabberPivot;
     private final DcMotorEx pixArm;
@@ -157,7 +155,7 @@ public class ConnectedDevices {
 
     //------------------------------------------------------------------------------------------------------------------
     public int getObjectPosition() {
-        ArrayList<Integer> numList = new ArrayList<Integer>();
+        ArrayList<Integer> numList = new ArrayList<>();
         List<Recognition> recognitions = objectProcessor.getRecognitions();
         for (Recognition detection : recognitions) {
             if (detection.getConfidence() > 0.75 && detection.getLeft()<detection.getRight())
@@ -168,20 +166,19 @@ public class ConnectedDevices {
                 numList.add(3);
         }
         double total = 0;
-        for (int x : numList) {
+        for (int x : numList)
             total += x;
-        }
         return (int) Range.clip(Math.round(total / numList.size()),1,3);
     }
 
     //------------------------------------------------------------------------------------------------------------------
     // THIS MIGHT MESS UP ROADRUNNER
-    public void moveToAprilTag(int pos) {
+    public void moveToAprilTag(int DESIRED_TAG_ID) {
         final double DESIRED_DISTANCE = 12.0; //  this is how close the camera should get to the target (inches)
         //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
         //  applied to the drive motors to correct the error.
         //  Drive = Error * Gain    Make these values smaller for smoother control, or larger for a more aggressive response.
-        final double SPEED_GAIN  =  0.02  ;   //  Forward Speed Control "Gain". eg: Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
+        final double SPEED_GAIN  =  0.02  ;   //  Forward Speed Control "Gain". eg: Ramp up to 50% power at a 25-inch error.   (0.50 / 25.0)
         final double STRAFE_GAIN =  0.015 ;   //  Strafe Speed Control "Gain".  eg: Ramp up to 25% power at a 25 degree Yaw error.   (0.25 / 25.0)
         final double TURN_GAIN   =  0.01  ;   //  Turn Control "Gain".  eg: Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
 
@@ -189,32 +186,26 @@ public class ConnectedDevices {
         final double MAX_AUTO_STRAFE= 0.5;   //  Clip the approach speed to this max value (adjust for your robot)
         final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)
 
-        final int DESIRED_TAG_ID = pos;
-
         while (true) {
-            double x, y, yaw = 0;
-            AprilTagDetection desiredTag = null;
+            double x, y, yaw;
+            AprilTagDetection desiredTag;
 
-            List<AprilTagDetection> currentDetections = QRProcessor.getDetections();
-            for (AprilTagDetection detection : currentDetections) {
-                // Look to see if we have size info on this tag.
-                if (detection.metadata != null) {
-                    //  Check to see if we want to track towards this tag.
-                    if ((DESIRED_TAG_ID < 0) || (detection.id == DESIRED_TAG_ID)) {
-                        // Yes, we want to use this tag.
-                        desiredTag = detection;
-                        break;  // don't look any further.
-                    } else {
-                        // This tag is in the library, but we do not want to track it right now.
-                        telemetry.addData("Skipping", "Tag ID %d is not desired", detection.id);
+            While: while (true) { // NOTE: IF THE APRIL TAG PROCESSOR CANT FIND THE APRIL TAG, IT WILL BE STUCK IN THE LOOP FOREVER
+                List<AprilTagDetection> currentDetections = QRProcessor.getDetections();
+                for (AprilTagDetection detection : currentDetections) {
+                    // Look to see if we have size info on this tag.
+                    if (detection.metadata != null) {
+                        //  Check to see if we want to track towards this tag.
+                        if ((DESIRED_TAG_ID < 0) || (detection.id == DESIRED_TAG_ID)) {
+                            // Yes, we want to use this tag.
+                            desiredTag = detection;
+                            break While;  // don't look any further.
+                        }
                     }
-                } else {
-                    // This tag is NOT in the library, so we don't have enough information to track to it.
-                    telemetry.addData("Unknown", "Tag ID %d is not in TagLibrary", detection.id);
                 }
             }
 
-            // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
+            // Determine heading, range and Yaw (tag image rotation) error, so we can use them to control the robot automatically.
             double rangeError = (desiredTag.ftcPose.range - DESIRED_DISTANCE);
             double headingError = desiredTag.ftcPose.bearing;
             double yawError = desiredTag.ftcPose.yaw;
