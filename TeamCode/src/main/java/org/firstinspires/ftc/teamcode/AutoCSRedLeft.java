@@ -63,7 +63,7 @@ public class AutoCSRedLeft extends LinearOpMode {
         if (isStopRequested()) return;
 
         // Find team prop pos with camera and then put correct trajectory into chosen
-        /*switch(util.getObjectPosition()) {
+        switch(util.getObjectPosition()) {
             case 1:
                 chosen1 = left1;
                 chosen2 = left2;
@@ -77,9 +77,7 @@ public class AutoCSRedLeft extends LinearOpMode {
                 chosen1 = right1;
                 chosen2 = right2;
                 break;
-        }*/
-        chosen1 = right1;
-        chosen2 = right2;
+        }
 
         Actions.runBlocking(
                 new SequentialAction(

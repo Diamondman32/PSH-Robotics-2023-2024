@@ -23,15 +23,15 @@ public class AutoCSRedRight extends LinearOpMode {
                 .strafeTo(left1Pose.position) //Move to team prop
                 .build();
         Action left2 = robot.actionBuilder(left1Pose)
-                .strafeToLinearHeading(new Vector2d(42.00, 51.00), Math.toRadians(90.00)) //Move to board
+                .strafeToLinearHeading(new Vector2d(48.00, 57.00), Math.toRadians(90.00)) //Move to board
                 .build();
 
-        Pose2d middle1Pose = new Pose2d(new Vector2d(35.00, 12.00), Math.toRadians(180.00));
+        Pose2d middle1Pose = new Pose2d(new Vector2d(43.00, 12.00), Math.toRadians(180.00));
         Action middle1 = robot.actionBuilder(startPose)
                 .strafeTo(middle1Pose.position) //Move to team prop
                 .build();
         Action middle2 = robot.actionBuilder(middle1Pose)
-                .strafeToLinearHeading(new Vector2d(36.00, 51.00), Math.toRadians(90.00)) //Move to board
+                .strafeToLinearHeading(new Vector2d(42.00, 57.00), Math.toRadians(90.00)) //Move to board
                 .build();
 
         Pose2d right1Pose = new Pose2d(new Vector2d(30.00, 12.00), Math.toRadians(269.99));
@@ -39,7 +39,7 @@ public class AutoCSRedRight extends LinearOpMode {
                 .strafeToLinearHeading(right1Pose.position, right1Pose.heading) //Move to team prop
                 .build();
         Action right2 = robot.actionBuilder(right1Pose)
-                .strafeToLinearHeading(new Vector2d(29.00, 51.00), Math.toRadians(90.00)) //Move to board
+                .strafeToLinearHeading(new Vector2d(35.00, 57.00), Math.toRadians(90.00)) //Move to board
                 .build();
 
         Action chosen1, chosen2;
