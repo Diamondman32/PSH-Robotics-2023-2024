@@ -27,20 +27,16 @@ import java.util.List;
 
 @TeleOp(group="drive")
 public class TeleOpCS extends OpMode {
-    /*
+
     private DcMotorEx frontLeft, frontRight, backLeft, backRight;
-    private DcMotor liftMotor1, liftMotor2, pixArm;
+    private DcMotor liftMotor1, liftMotor2, pixArm, armExtend;
     private Servo leftGrabber, rightGrabber, leftGrabberPivot, rightGrabberPivot, droneLauncher;
     private double rightGrabPos, leftGrabPos, pivotPos, dronePos, speedMultiplier; //for Grabber Arm
     private boolean leftGrabberToggle, rightGrabberToggle, droneToggle, pivotToggle, armToggle1, armToggle2, speedToggle = true;
     private final double pos = 0.0;
     private ElapsedTime rightGrabTimer, leftGrabTimer, droneTimer, pivotTimer, armTimer, speedTimer;
-     */
-    private TfodProcessor objectProcessor;
-    private AprilTagProcessor QRProcessor;
-    private VisionPortal webcam;
 
-    /*private int armValue = 0;
+    private int armValue = 0;
     private void armToHeightEncoders(int level, double power) {
         if (level == 0) {
             armValue = 0;
@@ -69,11 +65,11 @@ public class TeleOpCS extends OpMode {
         pixArm.setTargetPosition(armValue);
 
         pixArm.setPower(0.7);
-    }*/
+    }
 
     public void init() {
         // Motors
-        /*rightGrabTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+        rightGrabTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         leftGrabTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         droneTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         pivotTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
@@ -113,8 +109,13 @@ public class TeleOpCS extends OpMode {
         pixArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         pixArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         pixArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        pixArm.setTargetPosition(0);
-        pixArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //pixArm.setTargetPosition(0);
+        //pixArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        armExtend = hardwareMap.get(DcMotor.class, "armSlide");
+        armExtend.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armExtend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Servo
         leftGrabber = hardwareMap.get(Servo.class, "grabLeft");
@@ -127,36 +128,12 @@ public class TeleOpCS extends OpMode {
         pivotPos = 0.57;
 
         droneLauncher = hardwareMap.get(Servo.class, "plane");
-        dronePos = 0.86;*/
-
-        // Vision
-        QRProcessor = new AprilTagProcessor.Builder()
-                .setDrawAxes(true)
-                .setDrawCubeProjection(true)
-                .build();
-
-        // TensorFlow Processor
-        objectProcessor = new TfodProcessor.Builder()
-                .setModelAssetName("CenterStageModel.tflite")
-                .setMaxNumRecognitions(1)
-                .setUseObjectTracker(true)
-                .setModelLabels(new String[]{"prop"})
-                .build();
-
-        // Webcam
-        webcam = new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
-                .addProcessor(QRProcessor)
-                .addProcessor(objectProcessor)
-                .enableLiveView(true)
-                .setAutoStopLiveView(false)
-                .build();
-        webcam.setProcessorEnabled(QRProcessor,false);
+        dronePos = 0.86;
     }
 
     public void loop() {
         // Drive
-        /*float yPosLeft01 = -gamepad1.left_stick_y;
+        float yPosLeft01 = -gamepad1.left_stick_y;
         float yPosRight01 = -gamepad1.right_stick_y;
         float yPosLeft02 = -gamepad2.left_stick_y;
         float yPosRight02 = -gamepad2.right_stick_y;
@@ -191,20 +168,22 @@ public class TeleOpCS extends OpMode {
         }
 
         // Lift
-        liftMotor1.setPower(yPosLeft02);
-        liftMotor2.setPower(yPosRight02);
+        //liftMotor1.setPower(yPosLeft02);
+        //liftMotor2.setPower(yPosRight02);
 
 
-        //if (yPosLeft02 > 0.5) { //TESTER FOR SERVO VALUES
-        //    pivotPos += 0.01;
-        //}
-        //if (yPosLeft02 < -0.5) {
-        //    pivotPos -= 0.01;
-        //}
+        if (yPosLeft02 > 0.5) { //TESTER FOR SERVO VALUES
+            pivotPos += 0.01;
+        }
+        if (yPosLeft02 < -0.5) {
+            pivotPos -= 0.01;
+        }
 
 
         // Pixel Arm
-        if (armToggle1 && gamepad2.x && armTimer.milliseconds()>1000){
+        //pixArm.setPower(yPosRight02);
+        //telemetry.addData("pos", pixArm.getCurrentPosition());// encoder only returning 0
+        /*if (armToggle1 && gamepad2.x && armTimer.milliseconds()>1000){
             //up med
             armToHeightEncoders(1,0.7);
             pivotPos = 0.24;
@@ -230,11 +209,19 @@ public class TeleOpCS extends OpMode {
             armToHeightEncoders(-1, 0.5);//Level -1 doesn't change liftValue, sets power to 0
         } else if(5 > Math.abs(pixArm.getCurrentPosition()-armValue)) {
             armToHeightEncoders(-1,0);
+        }*/
+
+        // Pixel Arm Extender
+        if (gamepad2.right_bumper && armExtend.getCurrentPosition()<370) {
+            armExtend.setPower(1);
+        } else if (gamepad2.left_bumper && armExtend.getCurrentPosition()>5) {
+            armExtend.setPower(-1);
+        } else {
+            armExtend.setPower(0);
         }
 
-
         // Grabber
-        if (rightGrabberToggle && gamepad1.right_bumper && rightGrabTimer.milliseconds()>500){
+        /*if (rightGrabberToggle && gamepad1.right_bumper && rightGrabTimer.milliseconds()>500){
             //open
             rightGrabPos = 0.70;
             rightGrabberToggle = false;
@@ -258,9 +245,9 @@ public class TeleOpCS extends OpMode {
             leftGrabberToggle = true;
             leftGrabTimer.reset();
         }
-        leftGrabber.setPosition(leftGrabPos);
+        leftGrabber.setPosition(leftGrabPos);*/
 
-        if (pivotToggle && gamepad2.a && pivotTimer.milliseconds()>500){
+        /*if (pivotToggle && gamepad2.a && pivotTimer.milliseconds()>500){
             //down
             pivotPos = 0.1;
             pivotToggle = false;
@@ -270,12 +257,13 @@ public class TeleOpCS extends OpMode {
             pivotPos = 0.6;
             pivotToggle = true;
             pivotTimer.reset();
-        }
+        }*/
         rightGrabberPivot.setPosition(pivotPos);
         leftGrabberPivot.setPosition(1-pivotPos);
+        telemetry.addData("pos",pivotPos);
 
         //Drone Launcher
-        if (droneToggle && gamepad1.x && droneTimer.milliseconds()>500) {
+        /*if (droneToggle && gamepad1.x && droneTimer.milliseconds()>500) {
             //open
             dronePos = 0.5;
             droneToggle = false;
@@ -301,25 +289,6 @@ public class TeleOpCS extends OpMode {
 //        telemetry.addData("backRight",backRight.getCurrentPosition());
 //        telemetry.addData("pivotPos",rightGrabberPivot.getPosition());
 //        telemetry.addData("pixArm",pixArm.getCurrentPosition());
-        ArrayList<Integer> numList = new ArrayList<>();
-        List<Recognition> recognitions = null;
-        for (int i=0;i<10;i++) {
-            recognitions = objectProcessor.getRecognitions();
-            for (Recognition detection : recognitions) {
-                float center = (detection.getLeft() + detection.getRight()) / 2;
-                if (detection.getConfidence() > 0.8 && center < 357.5)
-                    numList.add(1);
-                else if (detection.getConfidence() > 0.8 && center > 357.5)
-                    numList.add(2);
-            }
-        }
-        if (recognitions.isEmpty()) // Position 3 is out of camera view
-            numList.add(3);
-
-        double total = 0;
-        for (int x : numList)
-            total += x;
-        telemetry.addData("pos", (int) Range.clip(Math.round(total / numList.size()),1,3));
-        telemetry.update();
+//        telemetry.update();
     }
 }
