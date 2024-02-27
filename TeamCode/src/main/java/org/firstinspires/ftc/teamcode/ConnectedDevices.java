@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import static java.lang.Thread.sleep;
+
 import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
@@ -7,9 +9,11 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.stream.CameraStreamClient;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -27,10 +31,14 @@ public class ConnectedDevices {
     private final AprilTagProcessor QRProcessor;
     private final VisionPortal webcam;
     private final MecanumDrive robot;
+    private ElapsedTime timer;
 
     public ConnectedDevices(HardwareMap hardwareMap, MecanumDrive robot) {
         //Making robot accessible in Action Classes
         this.robot = robot;
+
+        //Timer
+        timer = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
 
         // pixArm
         pixArm = hardwareMap.get(DcMotorEx.class, "arm");
@@ -155,20 +163,40 @@ public class ConnectedDevices {
 
     //------------------------------------------------------------------------------------------------------------------
     public int getObjectPosition() {
-        ArrayList<Integer> numList = new ArrayList<>();
-        List<Recognition> recognitions = objectProcessor.getRecognitions();
-        for (Recognition detection : recognitions) {
-            if (detection.getConfidence() > 0.75 && detection.getLeft()<detection.getRight())
-                numList.add(1);
-            else if (detection.getConfidence() > 0.75 && detection.getLeft()>detection.getRight())
-                numList.add(2);
-            else
-                numList.add(3);
+        while (timer.seconds()<4) { //Give time to camera from init to now to start up
+            //>:(
         }
+        ArrayList<Integer> numList = new ArrayList<>();
+        List<Recognition> recognitions = null;
+        for (int i=0;i<10;i++) {
+            recognitions = objectProcessor.getRecognitions();
+            for (Recognition detection : recognitions) {
+                float center = (detection.getLeft() + detection.getRight()) / 2;
+                if (detection.getConfidence() > 0.8 && center < 357.5)
+                    numList.add(1);
+                else if (detection.getConfidence() > 0.8 && center > 357.5)
+                    numList.add(2);
+            }
+        }
+        if (recognitions.isEmpty()) // Position 3 is out of camera view
+            numList.add(3);
+
         double total = 0;
         for (int x : numList)
             total += x;
         return (int) Range.clip(Math.round(total / numList.size()),1,3);
+    }
+
+    //----------------------------------------------------------------------------------------------
+    public float getObjectCenterX() {
+        ArrayList<Integer> numList = new ArrayList<>();
+        List<Recognition> recognitions = objectProcessor.getRecognitions();
+        for (Recognition detection : recognitions) {
+            float center = (detection.getLeft()+detection.getRight())/2;
+            if (detection.getConfidence()>0.8)
+                return center;
+        }
+        return 0;
     }
 
     //------------------------------------------------------------------------------------------------------------------
