@@ -31,40 +31,25 @@ public class TeleOpCS extends OpMode {
     private DcMotorEx frontLeft, frontRight, backLeft, backRight;
     private DcMotor liftMotor1, liftMotor2, pixArm, armExtend;
     private Servo leftGrabber, rightGrabber, leftGrabberPivot, rightGrabberPivot, droneLauncher;
-    private double rightGrabPos, leftGrabPos, pivotPos, dronePos, speedMultiplier; //for Grabber Arm
-    private boolean leftGrabberToggle, rightGrabberToggle, droneToggle, pivotToggle, armToggle1, armToggle2, speedToggle = true;
+    private double rightGrabPos, leftGrabPos, pivotPos, dronePos, speedMultiplier;
+    private boolean leftGrabberToggle, rightGrabberToggle, droneToggle, pivotToggle,
+            armToggle1, armToggle2, armToggle3, speedToggle;
     private final double pos = 0.0;
     private ElapsedTime rightGrabTimer, leftGrabTimer, droneTimer, pivotTimer, armTimer, speedTimer;
 
     private int armValue = 0;
     private void armToHeightEncoders(int level, double power) {
-        if (level == 0) {
+        if (level == 0)
             armValue = 0;
-        } else if (level == 1) {
-            armValue = 75;
-        } else if (level == 2) {
-            armValue = 161;
-        }
+        else if (level == 1)
+            armValue = 400;
+        else if (level == 2)
+            armValue = 728;
+        else if (level == 3)
+            armValue = 983;
 
         pixArm.setTargetPosition(armValue);
-
         pixArm.setPower(power);
-    }
-    private void armToHeightEncoders(int level) {
-        if (level == 0) {
-            armValue = 0;
-        } else if (level == 1) {
-            armValue = 75;
-        } else if (level == 2) {
-            armValue = 161;
-        } else if (level > -1) {
-            armValue += 1;
-        } else {
-            armValue -= 1;
-        }
-        pixArm.setTargetPosition(armValue);
-
-        pixArm.setPower(0.7);
     }
 
     public void init() {
@@ -75,6 +60,16 @@ public class TeleOpCS extends OpMode {
         pivotTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         armTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         speedTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+
+        //Toggles
+        leftGrabberToggle = true;
+        rightGrabberToggle = true;
+        droneToggle = true;
+        pivotToggle = true;
+        armToggle1 = true;
+        armToggle2 = true;
+        armToggle3 = true;
+        speedToggle = true;
 
         frontLeft = hardwareMap.get(DcMotorEx.class, "tl"); //top-left
         frontRight = hardwareMap.get(DcMotorEx.class, "tr"); //top-right
@@ -109,8 +104,8 @@ public class TeleOpCS extends OpMode {
         pixArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         pixArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         pixArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        //pixArm.setTargetPosition(0);
-        //pixArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        pixArm.setTargetPosition(0);
+        pixArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         armExtend = hardwareMap.get(DcMotor.class, "armSlide");
         armExtend.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -125,7 +120,7 @@ public class TeleOpCS extends OpMode {
 
         leftGrabberPivot = hardwareMap.get(Servo.class, "grabPivotLeft");
         rightGrabberPivot = hardwareMap.get(Servo.class, "grabPivotRight");
-        pivotPos = 0.57;
+        pivotPos = 0.53;
 
         droneLauncher = hardwareMap.get(Servo.class, "plane");
         dronePos = 0.86;
@@ -168,60 +163,75 @@ public class TeleOpCS extends OpMode {
         }
 
         // Lift
-        //liftMotor1.setPower(yPosLeft02);
-        //liftMotor2.setPower(yPosRight02);
+        liftMotor1.setPower(yPosLeft02);
+        liftMotor2.setPower(yPosRight02);
 
 
-        if (yPosLeft02 > 0.5) { //TESTER FOR SERVO VALUES
-            pivotPos += 0.01;
-        }
-        if (yPosLeft02 < -0.5) {
-            pivotPos -= 0.01;
-        }
+//        if (yPosLeft02 > 0.5) { //TESTER FOR SERVO VALUES
+//            pivotPos += 0.01;
+//        }
+//        if (yPosLeft02 < -0.5) {
+//            pivotPos -= 0.01;
+//        }
 
 
         // Pixel Arm
-        //pixArm.setPower(yPosRight02);
-        //telemetry.addData("pos", pixArm.getCurrentPosition());// encoder only returning 0
-        /*if (armToggle1 && gamepad2.x && armTimer.milliseconds()>1000){
+        if (armToggle1 && gamepad2.x && armTimer.milliseconds()>1000){
             //up med
-            armToHeightEncoders(1,0.7);
-            pivotPos = 0.24;
-            armToggle1 = false;
+            armToHeightEncoders(1,1);
+            pivotPos = 0.27;
+            armToggle1 = false; //false when at specified level, true otherwise
             armToggle2 = true;
+            armToggle3 = true;
             armTimer.reset();
-        } else if (armToggle2 && gamepad2.y && armTimer.milliseconds()>1000){
+        } else if (armToggle2 && gamepad2.y && armTimer.milliseconds()>1000) {
             //up high
-            armToHeightEncoders(2,0.7);
-            pivotPos = 0.15;
+            armToHeightEncoders(2, 1);
+            pivotPos = 0.18;
             armToggle1 = true;
             armToggle2 = false;
+            armToggle3 = true;
             armTimer.reset();
-        } else if ((!armToggle1 || !armToggle2) && (gamepad2.x || gamepad2.y) && armTimer.milliseconds()>500) {
-            //down
-            armToHeightEncoders(0,0.5);
-            pivotPos = 0.6;
+        } else if (armToggle3 && gamepad2.a && armTimer.milliseconds()>1000) {
+            armToHeightEncoders(3, 1);
+            pivotPos = 0.18;
             armToggle1 = true;
             armToggle2 = true;
+            armToggle3 = false;
+            armTimer.reset();
+        } else if ((!armToggle1 || !armToggle2 || !armToggle3)
+                && (gamepad2.x || gamepad2.y || gamepad2.a)
+                && armTimer.milliseconds()>500) {
+            //down
+            armToHeightEncoders(0,0.5);
+            pivotPos = 0.3;
+            armToggle1 = true;
+            armToggle2 = true;
+            armToggle3 = true;
             armTimer.reset();
         }
-        if (5 > Math.abs(pixArm.getCurrentPosition()-armValue) && pixArm.getCurrentPosition() > 50) {
-            armToHeightEncoders(-1, 0.5);//Level -1 doesn't change liftValue, sets power to 0
-        } else if(5 > Math.abs(pixArm.getCurrentPosition()-armValue)) {
+        //Slow power when at destination, if at destination near ground turn off power
+        //Level -1 doesn't change armValue, sets power to 0
+        if (15 > Math.abs(pixArm.getCurrentPosition()-armValue) && pixArm.getCurrentPosition() > 50)
+            armToHeightEncoders(-1, 0.5);
+        else if(pixArm.getCurrentPosition() < 50 && 15 > armValue-pixArm.getCurrentPosition())
             armToHeightEncoders(-1,0);
-        }*/
+        telemetry.addData("pixArm", pixArm.getCurrentPosition());
 
         // Pixel Arm Extender
-        if (gamepad2.right_bumper && armExtend.getCurrentPosition()<370) {
+        //Set Direction
+        if (gamepad2.right_bumper)
             armExtend.setPower(1);
-        } else if (gamepad2.left_bumper && armExtend.getCurrentPosition()>5) {
+        else if (gamepad2.left_bumper && armExtend.getCurrentPosition()>5)
             armExtend.setPower(-1);
-        } else {
+        //Stop when min or max is reached
+        if (armExtend.getCurrentPosition()>=370)
             armExtend.setPower(0);
-        }
+        else if (armExtend.getCurrentPosition()<=5)
+            armExtend.setPower(0);
 
         // Grabber
-        /*if (rightGrabberToggle && gamepad1.right_bumper && rightGrabTimer.milliseconds()>500){
+        if (rightGrabberToggle && gamepad1.right_bumper && rightGrabTimer.milliseconds()>500){
             //open
             rightGrabPos = 0.70;
             rightGrabberToggle = false;
@@ -245,36 +255,36 @@ public class TeleOpCS extends OpMode {
             leftGrabberToggle = true;
             leftGrabTimer.reset();
         }
-        leftGrabber.setPosition(leftGrabPos);*/
+        leftGrabber.setPosition(leftGrabPos);
 
-        /*if (pivotToggle && gamepad2.a && pivotTimer.milliseconds()>500){
+        if (pivotToggle && gamepad2.b && pivotTimer.milliseconds()>500){
             //down
-            pivotPos = 0.1;
+            pivotPos = 0.03;
             pivotToggle = false;
             pivotTimer.reset();
-        } else if (!pivotToggle && gamepad2.a && pivotTimer.milliseconds()>500) {
+        } else if (!pivotToggle && gamepad2.b && pivotTimer.milliseconds()>500) {
             //up
-            pivotPos = 0.6;
+            pivotPos = 0.3;//midpoint.  Highpoint (starting pos) is: .53
             pivotToggle = true;
             pivotTimer.reset();
-        }*/
+        }
         rightGrabberPivot.setPosition(pivotPos);
         leftGrabberPivot.setPosition(1-pivotPos);
-        telemetry.addData("pos",pivotPos);
+        //telemetry.addData("pivotpos",pivotPos);
 
         //Drone Launcher
-        /*if (droneToggle && gamepad1.x && droneTimer.milliseconds()>500) {
-            //open
-            dronePos = 0.5;
-            droneToggle = false;
-            droneTimer.reset();
-        } else if (!droneToggle && gamepad1.x && droneTimer.milliseconds()>500) {
-            //closed
-            dronePos = 0.86;
-            droneToggle = true;
-            droneTimer.reset();
-        }
-        droneLauncher.setPosition(dronePos);*/
+//        if (droneToggle && gamepad1.x && droneTimer.milliseconds()>500) {
+//            //open
+//            dronePos = 0.5;
+//            droneToggle = false;
+//            droneTimer.reset();
+//        } else if (!droneToggle && gamepad1.x && droneTimer.milliseconds()>500) {
+//            //closed
+//            dronePos = 0.86;
+//            droneToggle = true;
+//            droneTimer.reset();
+//        }
+//        droneLauncher.setPosition(dronePos);
 
 //        telemetry.addData("LiftPos1", liftMotor1.getCurrentPosition());
 //        telemetry.addData("LiftPos2", liftMotor2.getCurrentPosition());

@@ -93,10 +93,13 @@ public class ConnectedDevices {
                 armValue = 0;
                 power = 0.5;
             } else if (level == 1) {
-                armValue = 75;
+                armValue = 400;
                 power = 0.7;
             } else if (level == 2) {
-                armValue = 161;
+                armValue = 728;
+                power = 0.7;
+            } else if (level == 3) {
+                armValue = 983;
                 power = 0.7;
             } else {
                 power = 0;
@@ -185,18 +188,6 @@ public class ConnectedDevices {
         for (int x : numList)
             total += x;
         return (int) Range.clip(Math.round(total / numList.size()),1,3);
-    }
-
-    //----------------------------------------------------------------------------------------------
-    public float getObjectCenterX() {
-        ArrayList<Integer> numList = new ArrayList<>();
-        List<Recognition> recognitions = objectProcessor.getRecognitions();
-        for (Recognition detection : recognitions) {
-            float center = (detection.getLeft()+detection.getRight())/2;
-            if (detection.getConfidence()>0.8)
-                return center;
-        }
-        return 0;
     }
 
     //------------------------------------------------------------------------------------------------------------------
