@@ -176,7 +176,7 @@ public class TeleOpCS extends OpMode {
 
 
         // Pixel Arm
-        if (armToggle1 && gamepad2.x && armTimer.milliseconds()>1000){
+        if (armToggle1 && gamepad2.a && armTimer.milliseconds()>1000){
             //up med
             armToHeightEncoders(1,1);
             pivotPos = 0.27;
@@ -184,7 +184,7 @@ public class TeleOpCS extends OpMode {
             armToggle2 = true;
             armToggle3 = true;
             armTimer.reset();
-        } else if (armToggle2 && gamepad2.y && armTimer.milliseconds()>1000) {
+        } else if (armToggle2 && gamepad2.x && armTimer.milliseconds()>1000) {
             //up high
             armToHeightEncoders(2, 1);
             pivotPos = 0.18;
@@ -192,7 +192,7 @@ public class TeleOpCS extends OpMode {
             armToggle2 = false;
             armToggle3 = true;
             armTimer.reset();
-        } else if (armToggle3 && gamepad2.a && armTimer.milliseconds()>1000) {
+        } else if (armToggle3 && gamepad2.y && armTimer.milliseconds()>1000) {
             armToHeightEncoders(3, 1);
             pivotPos = 0.18;
             armToggle1 = true;

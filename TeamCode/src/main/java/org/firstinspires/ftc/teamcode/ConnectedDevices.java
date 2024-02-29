@@ -5,6 +5,7 @@ import static java.lang.Thread.sleep;
 import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.NullAction;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -13,7 +14,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.stream.CameraStreamClient;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -136,9 +136,9 @@ public class ConnectedDevices {
         @Override
         public boolean run(@NotNull TelemetryPacket telemetryPacket) {
             if (rightGrabberPos)
-                rightGrabber.setPosition(.37); //Close
+                rightGrabber.setPosition(1.00); //Close
             else
-                rightGrabber.setPosition(.61); //Open
+                rightGrabber.setPosition(0.70); //Open
             return false;
         }
     }
@@ -148,20 +148,30 @@ public class ConnectedDevices {
     }
 
     //------------------------------------------------------------------------------------------------------------------
-    private boolean leftGrabberPos;
-    private class SetLeftGrabber implements Action {
+    public class OpenLeftGrabber implements Action {
         @Override
         public boolean run(@NotNull TelemetryPacket telemetryPacket) {
-            if (leftGrabberPos)
-                leftGrabber.setPosition(.37); //Close
-            else
-                leftGrabber.setPosition(.61); //Open
+            leftGrabber.setPosition(.61); //Open
             return false;
         }
     }
-    public Action setLeftGrabber(boolean leftGrabberPos) {
-        this.leftGrabberPos = leftGrabberPos;
-        return new SetLeftGrabber();
+    public Action openLeftGrabber() {
+        return new OpenLeftGrabber();
+    }
+    public Action setLeftGrabber(boolean b) {
+        return new NullAction();
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+    public class CloseLeftGrabber implements Action {
+        @Override
+        public boolean run(@NotNull TelemetryPacket telemetryPacket) {
+            leftGrabber.setPosition(.37); //Close
+            return false;
+        }
+    }
+    public Action closeLeftGrabber() {
+        return new CloseLeftGrabber();
     }
 
     //------------------------------------------------------------------------------------------------------------------
