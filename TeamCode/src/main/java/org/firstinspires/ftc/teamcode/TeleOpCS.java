@@ -1,29 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
-
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
-
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
-import org.firstinspires.ftc.vision.tfod.TfodProcessor;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @TeleOp(group="drive")
 public class TeleOpCS extends OpMode {
@@ -33,8 +15,8 @@ public class TeleOpCS extends OpMode {
     private Servo leftGrabber, rightGrabber, leftGrabberPivot, rightGrabberPivot, droneLauncher;
     private double rightGrabPos, leftGrabPos, pivotPos, dronePos, speedMultiplier;
     private boolean leftGrabberToggle, rightGrabberToggle, droneToggle, pivotToggle,
-            armToggle1, armToggle2, armToggle3, speedToggle;
-    private final double pos = 0.0;
+            armToggle1, armToggle2, armToggle3, speedToggle, increasing, decreasing;
+    private double pos = 0.0;
     private ElapsedTime rightGrabTimer, leftGrabTimer, droneTimer, pivotTimer, armTimer, speedTimer;
 
     private int armValue = 0;
@@ -70,6 +52,8 @@ public class TeleOpCS extends OpMode {
         armToggle2 = true;
         armToggle3 = true;
         speedToggle = true;
+        increasing = false;
+        decreasing = false;
 
         frontLeft = hardwareMap.get(DcMotorEx.class, "tl"); //top-left
         frontRight = hardwareMap.get(DcMotorEx.class, "tr"); //top-right
@@ -167,12 +151,13 @@ public class TeleOpCS extends OpMode {
         liftMotor2.setPower(yPosRight02);
 
 
-//        if (yPosLeft02 > 0.5) { //TESTER FOR SERVO VALUES
-//            pivotPos += 0.01;
+//        if (gamepad1.dpad_up) { //TESTER FOR SERVO VALUES
+//            pos += 0.01;
 //        }
-//        if (yPosLeft02 < -0.5) {
-//            pivotPos -= 0.01;
+//        if (gamepad1.dpad_down) {
+//            pos -= 0.01;
 //        }
+//        telemetry.addData("drone", pos);
 
 
         // Pixel Arm
@@ -194,7 +179,7 @@ public class TeleOpCS extends OpMode {
             armTimer.reset();
         } else if (armToggle3 && gamepad2.y && armTimer.milliseconds()>1000) {
             armToHeightEncoders(3, 1);
-            pivotPos = 0.18;
+            pivotPos = 0.03;
             armToggle1 = true;
             armToggle2 = true;
             armToggle3 = false;
@@ -220,15 +205,23 @@ public class TeleOpCS extends OpMode {
 
         // Pixel Arm Extender
         //Set Direction
-        if (gamepad2.right_bumper)
+        if (gamepad2.right_bumper && armExtend.getCurrentPosition()<370) {
             armExtend.setPower(1);
-        else if (gamepad2.left_bumper && armExtend.getCurrentPosition()>5)
+            increasing = true;
+            decreasing = false;
+        } else if (gamepad2.left_bumper && armExtend.getCurrentPosition()>5) {
             armExtend.setPower(-1);
+            increasing = false;
+            decreasing = true;
+        }
         //Stop when min or max is reached
-        if (armExtend.getCurrentPosition()>=370)
+        if (increasing && armExtend.getCurrentPosition()>=370) {
             armExtend.setPower(0);
-        else if (armExtend.getCurrentPosition()<=5)
+            increasing = false;
+        } else if (decreasing && armExtend.getCurrentPosition()<=5) {
             armExtend.setPower(0);
+            decreasing = false;
+        }
 
         // Grabber
         if (rightGrabberToggle && gamepad1.right_bumper && rightGrabTimer.milliseconds()>500){
@@ -259,7 +252,7 @@ public class TeleOpCS extends OpMode {
 
         if (pivotToggle && gamepad2.b && pivotTimer.milliseconds()>500){
             //down
-            pivotPos = 0.03;
+            pivotPos = 0.01;
             pivotToggle = false;
             pivotTimer.reset();
         } else if (!pivotToggle && gamepad2.b && pivotTimer.milliseconds()>500) {
@@ -270,35 +263,19 @@ public class TeleOpCS extends OpMode {
         }
         rightGrabberPivot.setPosition(pivotPos);
         leftGrabberPivot.setPosition(1-pivotPos);
-        //telemetry.addData("pivotpos",pivotPos);
 
         //Drone Launcher
-//        if (droneToggle && gamepad1.x && droneTimer.milliseconds()>500) {
-//            //open
-//            dronePos = 0.5;
-//            droneToggle = false;
-//            droneTimer.reset();
-//        } else if (!droneToggle && gamepad1.x && droneTimer.milliseconds()>500) {
-//            //closed
-//            dronePos = 0.86;
-//            droneToggle = true;
-//            droneTimer.reset();
-//        }
-//        droneLauncher.setPosition(dronePos);
-
-//        telemetry.addData("LiftPos1", liftMotor1.getCurrentPosition());
-//        telemetry.addData("LiftPos2", liftMotor2.getCurrentPosition());
-//        telemetry.addData("Encoder Diff", Math.abs(liftMotor1.getCurrentPosition()-liftMotor2.getCurrentPosition()));
-//        telemetry.addData("Arm target", armValue);
-//        telemetry.addData("difference (5)",pixArm.getCurrentPosition()-armValue);
-//        telemetry.addData("Arm Encoder", pixArm.getCurrentPosition());
-//        telemetry.addData("busy", pixArm.isBusy());
-//        telemetry.addData("frontLeft",frontLeft.getCurrentPosition());
-//        telemetry.addData("frontRight",frontRight.getCurrentPosition());
-//        telemetry.addData("backLeft",backLeft.getCurrentPosition());
-//        telemetry.addData("backRight",backRight.getCurrentPosition());
-//        telemetry.addData("pivotPos",rightGrabberPivot.getPosition());
-//        telemetry.addData("pixArm",pixArm.getCurrentPosition());
-//        telemetry.update();
+        if (droneToggle && gamepad1.x && droneTimer.milliseconds()>500) {
+            //open
+            dronePos = 0.71;
+            droneToggle = false;
+            droneTimer.reset();
+        } else if (!droneToggle && gamepad1.x && droneTimer.milliseconds()>500) {
+            //closed
+            dronePos = 0.97;
+            droneToggle = true;
+            droneTimer.reset();
+        }
+        droneLauncher.setPosition(dronePos);
     }
 }

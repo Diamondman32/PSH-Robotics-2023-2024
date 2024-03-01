@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.NullAction;
+import com.acmerobotics.roadrunner.SleepAction;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -83,6 +84,12 @@ public class ConnectedDevices {
     }
 
     //------------------------------------------------------------------------------------------------------------------
+    /*
+    TODO:
+        The static Action classes can only access non-static variables once. So either these classes
+        can only run once or a lot of static stuff has to happen.
+     */
+
     private int level = 0;
     private int armValue = 0;
     public class SetArmPos implements Action {
@@ -116,35 +123,66 @@ public class ConnectedDevices {
     }
 
     //------------------------------------------------------------------------------------------------------------------
-    private double pos;
-    private class SetPivot implements Action {
+    private class SetPivotDown implements Action {
         @Override
         public boolean run(@NotNull TelemetryPacket telemetryPacket) {
-            rightGrabberPivot.setPosition(pos);
-            leftGrabberPivot.setPosition(1-pos);
+            rightGrabberPivot.setPosition(0.03);
+            leftGrabberPivot.setPosition(1-0.03);
             return false;
         }
     }
-    public Action setPivot(double pos) {
-        this.pos = pos;
-        return new SetPivot();
+    public Action setPivotDown() {
+        return new SetPivotDown();
     }
 
     //------------------------------------------------------------------------------------------------------------------
-    private boolean rightGrabberPos;
-    private class SetRightGrabber implements Action {
+    private class SetPivotMed implements Action {
         @Override
         public boolean run(@NotNull TelemetryPacket telemetryPacket) {
-            if (rightGrabberPos)
-                rightGrabber.setPosition(1.00); //Close
-            else
-                rightGrabber.setPosition(0.70); //Open
+            rightGrabberPivot.setPosition(0.2);
+            leftGrabberPivot.setPosition(1-0.25);
             return false;
         }
     }
-    public Action setRightGrabber(boolean rightGrabberPos) {
-        this.rightGrabberPos = rightGrabberPos;
-        return new SetRightGrabber();
+    public Action setPivotMed() {
+        return new SetPivotMed();
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+    private class SetPivotHigh implements Action {
+        @Override
+        public boolean run(@NotNull TelemetryPacket telemetryPacket) {
+            rightGrabberPivot.setPosition(0.53);
+            leftGrabberPivot.setPosition(1-0.53);
+            return false;
+        }
+    }
+    public Action setPivotHigh() {
+        return new SetPivotHigh();
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+    public class OpenRightGrabber implements Action {
+        @Override
+        public boolean run(@NotNull TelemetryPacket telemetryPacket) {
+            rightGrabber.setPosition(0.70); //Open
+            return false;
+        }
+    }
+    public Action openRightGrabber() {
+        return new OpenRightGrabber();
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+    public class CloseRightGrabber implements Action {
+        @Override
+        public boolean run(@NotNull TelemetryPacket telemetryPacket) {
+            rightGrabber.setPosition(1.00); //Close
+            return false;
+        }
+    }
+    public Action closeRightGrabber() {
+        return new CloseRightGrabber();
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -158,9 +196,6 @@ public class ConnectedDevices {
     public Action openLeftGrabber() {
         return new OpenLeftGrabber();
     }
-    public Action setLeftGrabber(boolean b) {
-        return new NullAction();
-    }
 
     //------------------------------------------------------------------------------------------------------------------
     public class CloseLeftGrabber implements Action {
@@ -172,6 +207,10 @@ public class ConnectedDevices {
     }
     public Action closeLeftGrabber() {
         return new CloseLeftGrabber();
+    }
+
+    public Action wait1() {
+        return new SleepAction(1);
     }
 
     //------------------------------------------------------------------------------------------------------------------

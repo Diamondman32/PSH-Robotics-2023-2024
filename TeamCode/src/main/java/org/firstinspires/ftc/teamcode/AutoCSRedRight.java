@@ -20,48 +20,77 @@ public class AutoCSRedRight extends LinearOpMode {
 
         Action left = robot.actionBuilder(startPose)
                 //Move to team prop
-                .strafeToLinearHeading(new Vector2d(25.00, 20.00), Math.toRadians(269.99))
+                .strafeToLinearHeading(new Vector2d(50.00, 20.00), Math.toRadians(269.99))
                 //open left claw and then raise arm
                 .afterTime(0,
                     new SequentialAction(
-                        util.setLeftGrabber(false),
-                        util.setPivot(0.3)
+                        util.openLeftGrabber(),
+                        util.closeRightGrabber(),
+                        util.setPivotMed(),
+                        util.closeLeftGrabber()
                     )
                 )
+                .waitSeconds(1)
                 //drive to board
-                .strafeToLinearHeading(new Vector2d(35.00, 57.00), Math.toRadians(90.00))
+                .strafeToLinearHeading(new Vector2d(30.00, 54.00), Math.toRadians(90.00))
+                .waitSeconds(1)
                 //open claw
-                .afterTime(0, new SequentialAction(util.setRightGrabber(false)))
+                .afterTime(0,
+                    new SequentialAction(
+                        util.openRightGrabber(),
+                        util.setPivotHigh()
+                    )
+                )
+                .waitSeconds(1)
                 .build();
 
         Action middle = robot.actionBuilder(startPose)
                 //Move to team prop
-                .strafeTo(new Vector2d(43.00, 12.00))
+                .strafeTo(new Vector2d(40.00, 12.00))
                 //open left claw and then raise arm
                 .afterTime(0,
                     new SequentialAction(
-                        util.setLeftGrabber(false),
-                        util.setPivot(0.3)
+                        util.openLeftGrabber(),
+                        util.closeRightGrabber(),
+                        util.setPivotMed()
                     )
                 )
+                .waitSeconds(1)
                 //drive to board
-                .strafeToLinearHeading(new Vector2d(42.00, 57.00), Math.toRadians(90.00))
+                .strafeToLinearHeading(new Vector2d(33.50, 52.00), Math.toRadians(90.00))
+                .waitSeconds(1)
                 //open claw
-                .afterTime(0, new SequentialAction(util.setRightGrabber(false)))
+                .afterTime(0,
+                        new SequentialAction(
+                                util.openRightGrabber(),
+                                util.setPivotHigh()
+                        )
+                )
+                .waitSeconds(1)
                 .build();
 
         Action right = robot.actionBuilder(startPose)
-                .waitSeconds(3)
                 //Move to team prop
                 .strafeTo(new Vector2d(45.00, 29.00))
                 //open left claw and then raise arm
-                .afterTime(0, util.openLeftGrabber())
-                //.afterTime(1, util.setPivot(0.3))
-                .waitSeconds(4)
+                .afterTime(0, new SequentialAction(
+                        util.openLeftGrabber(),
+                        util.closeRightGrabber(),
+                        util.setPivotMed()
+                    )
+                )
+                .waitSeconds(1)
                 //drive to board
-                .strafeToLinearHeading(new Vector2d(48.00, 57.00), Math.toRadians(90.00))
+                .strafeToLinearHeading(new Vector2d(34.00, 54.00), Math.toRadians(90.00))
+                .waitSeconds(1)
                 //open claw
-                .afterTime(0, util.setRightGrabber(false))
+                .afterTime(0,
+                        new SequentialAction(
+                                util.openRightGrabber(),
+                                util.setPivotHigh()
+                        )
+                )
+                .waitSeconds(1)
                 .build();
 
         Action chosen;
@@ -84,10 +113,11 @@ public class AutoCSRedRight extends LinearOpMode {
         }
 
         Actions.runBlocking(
-            new ParallelAction(
+            new SequentialAction(
                 util.closeLeftGrabber(),
-                util.setRightGrabber(true),
-                util.setPivot(0.03),
+                util.closeRightGrabber(),
+                util.setPivotDown(),
+                util.wait1(),
                 chosen
             )
         );
