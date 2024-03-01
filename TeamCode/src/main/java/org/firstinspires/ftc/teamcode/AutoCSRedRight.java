@@ -20,7 +20,7 @@ public class AutoCSRedRight extends LinearOpMode {
 
         Action left = robot.actionBuilder(startPose)
                 //Move to team prop
-                .strafeToLinearHeading(new Vector2d(50.00, 20.00), Math.toRadians(269.99))
+                .splineToSplineHeading(new Pose2d(32.00, 19.00, Math.toRadians(270.00)), Math.toRadians(180.00))
                 //open left claw and then raise arm
                 .afterTime(0,
                     new SequentialAction(
@@ -30,10 +30,10 @@ public class AutoCSRedRight extends LinearOpMode {
                         util.closeLeftGrabber()
                     )
                 )
-                .waitSeconds(1)
+                .waitSeconds(.5)
                 //drive to board
-                .strafeToLinearHeading(new Vector2d(30.00, 54.00), Math.toRadians(90.00))
-                .waitSeconds(1)
+                .strafeToLinearHeading(new Vector2d(30.00, 52.00), Math.toRadians(90.00))
+                .waitSeconds(.5)
                 //open claw
                 .afterTime(0,
                     new SequentialAction(
@@ -41,7 +41,7 @@ public class AutoCSRedRight extends LinearOpMode {
                         util.setPivotHigh()
                     )
                 )
-                .waitSeconds(1)
+                .waitSeconds(.5)
                 .build();
 
         Action middle = robot.actionBuilder(startPose)
@@ -55,10 +55,10 @@ public class AutoCSRedRight extends LinearOpMode {
                         util.setPivotMed()
                     )
                 )
-                .waitSeconds(1)
+                .waitSeconds(.5)
                 //drive to board
                 .strafeToLinearHeading(new Vector2d(33.50, 52.00), Math.toRadians(90.00))
-                .waitSeconds(1)
+                .waitSeconds(.5)
                 //open claw
                 .afterTime(0,
                         new SequentialAction(
@@ -66,7 +66,7 @@ public class AutoCSRedRight extends LinearOpMode {
                                 util.setPivotHigh()
                         )
                 )
-                .waitSeconds(1)
+                .waitSeconds(.5)
                 .build();
 
         Action right = robot.actionBuilder(startPose)
@@ -79,10 +79,10 @@ public class AutoCSRedRight extends LinearOpMode {
                         util.setPivotMed()
                     )
                 )
-                .waitSeconds(1)
+                .waitSeconds(.5)
                 //drive to board
                 .strafeToLinearHeading(new Vector2d(34.00, 54.00), Math.toRadians(90.00))
-                .waitSeconds(1)
+                .waitSeconds(.5)
                 //open claw
                 .afterTime(0,
                         new SequentialAction(
@@ -90,7 +90,7 @@ public class AutoCSRedRight extends LinearOpMode {
                                 util.setPivotHigh()
                         )
                 )
-                .waitSeconds(1)
+                .waitSeconds(.5)
                 .build();
 
         Action chosen;

@@ -18,52 +18,79 @@ public class AutoCSBlueLeft extends LinearOpMode {
         MecanumDrive robot = new MecanumDrive(hardwareMap, startPose);
         ConnectedDevices util = new ConnectedDevices(hardwareMap, robot);
 
-        Action left = robot.actionBuilder(startPose)
+        Action right = robot.actionBuilder(startPose)
                 //Move to team prop
-                .strafeTo(new Vector2d(-39.00, 23.00))
+                .splineToSplineHeading(new Pose2d(-32.00, 19.00, Math.toRadians(270.00)), Math.toRadians(0.00))
                 //open left claw and then raise arm
                 .afterTime(0,
                         new SequentialAction(
                                 util.openLeftGrabber(),
-                                util.setPivotMed()
+                                util.closeRightGrabber(),
+                                util.setPivotMed(),
+                                util.closeLeftGrabber()
                         )
                 )
-                //move to board
-                .strafeToLinearHeading(new Vector2d(-42.00, 51.00), Math.toRadians(90.00))
+                .waitSeconds(.5)
+                //drive to board
+                .strafeToLinearHeading(new Vector2d(-30.00, 52.00), Math.toRadians(90.00))
+                .waitSeconds(.5)
                 //open claw
-                .afterTime(0, util.openRightGrabber())
+                .afterTime(0,
+                        new SequentialAction(
+                                util.openRightGrabber(),
+                                util.setPivotHigh()
+                        )
+                )
+                .waitSeconds(.5)
                 .build();
 
         Action middle = robot.actionBuilder(startPose)
                 //Move to team prop
-                .strafeTo(new Vector2d(-35.00, 12.00))
+                .strafeTo(new Vector2d(-40.00, 12.00))
                 //open left claw and then raise arm
                 .afterTime(0,
                         new SequentialAction(
                                 util.openLeftGrabber(),
+                                util.closeRightGrabber(),
                                 util.setPivotMed()
                         )
                 )
-                //move to board
-                .strafeToLinearHeading(new Vector2d(-36.00, 51.00), Math.toRadians(90.00))
+                .waitSeconds(.5)
+                //drive to board
+                .strafeToLinearHeading(new Vector2d(-33.50, 52.00), Math.toRadians(90.00))
+                .waitSeconds(.5)
                 //open claw
-                .afterTime(0, util.openRightGrabber())
+                .afterTime(0,
+                        new SequentialAction(
+                                util.openRightGrabber(),
+                                util.setPivotHigh()
+                        )
+                )
+                .waitSeconds(.5)
                 .build();
 
-        Action right = robot.actionBuilder(startPose)
+        Action left = robot.actionBuilder(startPose)
                 //Move to team prop
-                .strafeToLinearHeading(new Vector2d(-30.00, 12.00), Math.toRadians(269.99))
+                .strafeTo(new Vector2d(-45.00, 29.00))
                 //open left claw and then raise arm
-                .afterTime(0,
-                        new SequentialAction(
+                .afterTime(0, new SequentialAction(
                                 util.openLeftGrabber(),
+                                util.closeRightGrabber(),
                                 util.setPivotMed()
                         )
                 )
-                //move to board
-                .strafeToLinearHeading(new Vector2d(-29.00, 51.00), Math.toRadians(90.00))
+                .waitSeconds(.5)
+                //drive to board
+                .strafeToLinearHeading(new Vector2d(-34.00, 54.00), Math.toRadians(90.00))
+                .waitSeconds(.5)
                 //open claw
-                .afterTime(0, util.openRightGrabber())
+                .afterTime(0,
+                        new SequentialAction(
+                                util.openRightGrabber(),
+                                util.setPivotHigh()
+                        )
+                )
+                .waitSeconds(.5)
                 .build();
 
         Action chosen;
