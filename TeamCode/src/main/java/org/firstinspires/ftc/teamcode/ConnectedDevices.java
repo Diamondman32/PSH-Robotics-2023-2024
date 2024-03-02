@@ -32,14 +32,14 @@ public class ConnectedDevices {
     private final AprilTagProcessor QRProcessor;
     private final VisionPortal webcam;
     private final MecanumDrive robot;
-    private ElapsedTime timer;
+    private ElapsedTime timeSinceInit;
 
     public ConnectedDevices(HardwareMap hardwareMap, MecanumDrive robot) {
         //Making robot accessible in Action Classes
         this.robot = robot;
 
         //Timer
-        timer = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
+        timeSinceInit = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
 
         // pixArm
         pixArm = hardwareMap.get(DcMotorEx.class, "arm");
@@ -209,13 +209,43 @@ public class ConnectedDevices {
         return new CloseLeftGrabber();
     }
 
+    //------------------------------------------------------------------------------------------------------------------
+    public class SlowlyMoveForward implements Action {
+        private final ElapsedTime approachTime = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
+        @Override
+        public boolean run(@NotNull TelemetryPacket telemetryPacket) {
+            if (approachTime.seconds() >= 0.5) {
+                robot.setMotorPower(0.2,0.2,0.2,0.2);
+            } else {
+                return false;
+            }
+            return true;
+        }
+    }
+    public Action slowlyMoveForward() {
+        return new SlowlyMoveForward();
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+    public class StopMotors implements Action {
+        @Override
+        public boolean run(@NotNull TelemetryPacket telemetryPacket) {
+            robot.setMotorPower(0,0,0,0);
+            return false;
+        }
+    }
+    public Action stopMotors() {
+        return new StopMotors();
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
     public Action wait1() {
         return new SleepAction(1);
     }
 
     //------------------------------------------------------------------------------------------------------------------
     public int getObjectPosition() {
-        while (timer.seconds()<4) { //Give time to camera from init to now to start up
+        while (timeSinceInit.seconds()<4) { //Give time to camera from init to now to start up
             //>:(
         }
         ArrayList<Integer> numList = new ArrayList<>();
@@ -224,9 +254,9 @@ public class ConnectedDevices {
             recognitions = objectProcessor.getRecognitions();
             for (Recognition detection : recognitions) {
                 float center = (detection.getLeft() + detection.getRight()) / 2;
-                if (detection.getConfidence() > 0.8 && center < 357.5)
+                if (detection.getConfidence() > 0.6 && center < 357.5)
                     numList.add(1);
-                else if (detection.getConfidence() > 0.8 && center > 357.5)
+                else if (detection.getConfidence() > 0.6 && center > 357.5)
                     numList.add(2);
             }
         }
@@ -237,6 +267,20 @@ public class ConnectedDevices {
         for (int x : numList)
             total += x;
         return (int) Range.clip(Math.round(total / numList.size()),1,3);
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+    public float getObjectCenter() {
+        while (timeSinceInit.seconds()<4) { //Give time to camera from init to now to start up
+            //>:(
+        }
+        ArrayList<Integer> numList = new ArrayList<>();
+        List<Recognition> recognitions = null;
+        recognitions = objectProcessor.getRecognitions();
+        for (Recognition recognition : recognitions) {
+            return (recognition.getLeft()+recognition.getRight())/2;
+        }
+        return 0;
     }
 
     //------------------------------------------------------------------------------------------------------------------

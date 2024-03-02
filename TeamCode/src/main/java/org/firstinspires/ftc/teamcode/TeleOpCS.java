@@ -1,11 +1,20 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.tfod.TfodProcessor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @TeleOp(group="drive")
 public class TeleOpCS extends OpMode {
@@ -18,6 +27,8 @@ public class TeleOpCS extends OpMode {
             armToggle1, armToggle2, armToggle3, speedToggle, increasing, decreasing;
     private double pos = 0.0;
     private ElapsedTime rightGrabTimer, leftGrabTimer, droneTimer, pivotTimer, armTimer, speedTimer;
+    private TfodProcessor objectProcessor;
+    private VisionPortal webcam;
 
     private int armValue = 0;
     private void armToHeightEncoders(int level, double power) {
@@ -33,9 +44,31 @@ public class TeleOpCS extends OpMode {
         pixArm.setTargetPosition(armValue);
         pixArm.setPower(power);
     }
+    public float getObjectCenter() {
+        ArrayList<Integer> numList = new ArrayList<>();
+        List<Recognition> recognitions = null;
+        recognitions = objectProcessor.getRecognitions();
+        for (Recognition recognition : recognitions) {
+            return (recognition.getLeft()+recognition.getRight())/2;
+        }
+        return 0;
+    }
 
     public void init() {
-        // Motors
+        objectProcessor = new TfodProcessor.Builder()
+                .setModelAssetName("CenterStageModel.tflite")
+                .setMaxNumRecognitions(1)
+                .setUseObjectTracker(true)
+                .setModelLabels(new String[]{"prop"})
+                .build();
+
+        // Webcam
+        webcam = new VisionPortal.Builder()
+                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                .addProcessor(objectProcessor)
+                .enableLiveView(true)
+                .setAutoStopLiveView(false)
+                .build();        // Motors
         rightGrabTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         leftGrabTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         droneTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
@@ -107,10 +140,11 @@ public class TeleOpCS extends OpMode {
         pivotPos = 0.53;
 
         droneLauncher = hardwareMap.get(Servo.class, "plane");
-        dronePos = 0.86;
+        dronePos = 0.90;
     }
 
     public void loop() {
+        telemetry.addData("center", getObjectCenter());
         // Drive
         float yPosLeft01 = -gamepad1.left_stick_y;
         float yPosRight01 = -gamepad1.right_stick_y;
@@ -244,7 +278,7 @@ public class TeleOpCS extends OpMode {
             leftGrabTimer.reset();
         } else if (!leftGrabberToggle && gamepad1.left_bumper && leftGrabTimer.milliseconds()>500) {
             //closed
-            leftGrabPos = 0.37;
+            leftGrabPos = 0.3;
             leftGrabberToggle = true;
             leftGrabTimer.reset();
         }
@@ -272,7 +306,7 @@ public class TeleOpCS extends OpMode {
             droneTimer.reset();
         } else if (!droneToggle && gamepad1.x && droneTimer.milliseconds()>500) {
             //closed
-            dronePos = 0.97;
+            dronePos = 0.90;
             droneToggle = true;
             droneTimer.reset();
         }
